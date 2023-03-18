@@ -1,0 +1,143 @@
+---
+title: "Replace it"
+author: " Carlos van der Ley, Christine Kwon, Connor, Leonardo Gonzalez"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+## Title (replace it)
+
+
+
+## Authors
+
+Carlos van der Ley, Christine Kwon, Connor, Leonardo Gonzalez
+
+## Introduction
+
+
+
+## Questions
+
+**1. **
+
+**2. **
+
+**3. **
+
+**4. **
+
+## Data
+
+### Data Introduction
+
+
+
+### Load packages
+```{r load-packages, message=FALSE}
+library(tidyverse)
+library(tidymodels)
+library(forcats)
+library(olsrr)
+library(skimr)
+library(srvyr)
+library(osfr) #from osf website
+```
+
+### Data Import
+```{r}
+
+# data <- list.files(recursive = TRUE,
+#                         path = "testdata",
+#                         pattern = "*.csv",
+#                         full.names = TRUE) |>
+#   purrr::map(~read_csv(.))
+# 
+# 
+# save(data, file="data/mental_health.rda")
+
+```
+
+### Data Wrangling
+
+#### Load the data
+
+```{r}
+# LOAD THE DATASET
+load("data/mental_health.rda")
+```
+
+```{r data-wrangling}
+
+# COMBINE DATASETS
+red_mh <- data |>
+  map_df(bind_rows)
+
+
+# CLEAN THE FINAL DATASET
+
+
+# SAVE THE FINAL DATASET
+# save(red_mh, file="data/wrangled_mental_health.rda")
+
+```
+
+#### A (may be removed later)
+
+#### B (may be removed later)
+
+## Analysis
+
+
+
+### Exploratory Data Analysis
+
+```{r}
+skim(red_mh)
+```
+
+## Data Analysis
+
+### Question 1:
+
+```r{}
+
+```
+-ANSWER QUESTION 1
+
+### Question 2:
+
+```r{}
+
+```
+-ANSWER QUESTION 2
+
+### Question 3:
+
+```r{}
+
+```
+-ANSWER QUESTION 3
+
+### Question 4:
+
+```r{}
+
+```
+
+-ANSWER QUESTION 4
+
+## Modeling
+
+-ADD MODELS HERE
+
+### Results
+
+-ADD RESULTS
+
+## Conclusion
+
+-ADD CONCLUSION
