@@ -50,7 +50,7 @@ library(osfr) #from osf website
 ### Data Import
 ```{r}
 
-if(!file.exists("reddit_mental_health_report.zip")) {
+if(!file.exists("data/mental_health.rda")) {
   cidr <- getwd()
   mkfldr <- "data/"
   dir.create(file.path(cidr, mkfldr), recursive = TRUE)
