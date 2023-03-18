@@ -64,7 +64,7 @@ if(!file.exists("data/mental_health.rda")) {
 
 ```{r data-wrangling}
 
-if(!file.exists("data/mental_health.zip")) {
+if(!file.exists("data/mental_health.rda")) {
   # GET RELATED MENTAL FILES
   mental_files = "anxiety| |socialanxiety | healthanxiety | autism | adhd | ptsd | lonely | depression | suicidewatch | bipolarreddit | bpd | addiction | alcoholism | schizophrenia"
   
