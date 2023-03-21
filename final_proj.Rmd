@@ -17,7 +17,7 @@ output:
 Carlos van der Ley, Christine Kwon, Connor Bates , Leonardo Gonzalez
 
 ## Introduction
-Mental health represents a critical aspect of an individual's overall well being as well as am important branch of Cognitive Science. Understanding not only a single individual, but a community's perceptions of mental health and addiction are important to providing people with the help and support that they need. 
+Mental health represents a critical aspect of an individual's overall well being as well as am important branch of Cognitive Science. Understanding not only a single individual's mental health, but also community's discussions and perceptions of mental health are essential to providing people with the help and support that they need. One online platform where community members come together to discuss mental and addiction topics is the online forum Reddit. Beginning in late 2018, the platform collected data from the platforms largest mental health centered communities for nearly two years. Our exploration of mental health discussion will leverage the rich data set provided by the platform in order to explore changes in mental health and addiction discussions in the period leading up to, as well as the beginning of the 2019-2020 pandemic.   
 
 ## Questions
 
@@ -27,7 +27,7 @@ Mental health represents a critical aspect of an individual's overall well being
 
 **3. How did economic stress change over the Pandemic (Late 2019, 2020 data), and did it result in changes in a specific emotion over the other (i.e. Anger, Anxiety, General Negative Emotion)
 
-**4. Do trends within addiction mirror mental health trends?
+**4. Do trends within addiction mirror mental health trends? 
 
 ## Data
 
