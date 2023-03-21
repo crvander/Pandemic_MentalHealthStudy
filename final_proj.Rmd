@@ -6,17 +6,11 @@ output:
     toc: true
     toc_float: true
     code_folding: hide
+bibliography: references.bib
+link-citations: true
 ---
 
 ## Title (replace it)
-
-
-
-## Authors
-
-Carlos van der Ley, Christine Kwon, Connor, Leonardo Gonzalez
-
-## Introduction
 
 
 
@@ -34,7 +28,17 @@ Carlos van der Ley, Christine Kwon, Connor, Leonardo Gonzalez
 
 ### Data Introduction
 
+The original data in this analysis is from Reddit and comprises 107 different datasets, including posts from 15 mental health support groups across 28 subreddits from 2018 to 2020. It was originally used, from January to April 2020, to analyze how COVID-19 affected mental health support groups[@low2020natural]. The dataset was downloaded from Open Science Framework[^1] (OSF), a free and open-source project management tool for researchers. 
 
+**Reddit Mental Health Dataset**  
+Contains posts and text features for the following timeframes from 28 mental health and non-mental health subreddits:
+15 specific mental health support groups (r/EDAnonymous, r/addiction, r/alcoholism, r/adhd, r/anxiety, r/autism, r/bipolarreddit, r/bpd, r/depression, r/healthanxiety, r/lonely, r/ptsd, r/schizophrenia, r/socialanxiety, and r/suicidewatch)
+2 broad mental health subreddits (r/mentalhealth, r/COVID19_support)
+11 non-mental health subreddits (r/conspiracy, r/divorce, r/fitness, r/guns, r/jokes, r/legaladvice, r/meditation, r/parenting, r/personalfinance, r/relationships, r/teaching).
+License
+This dataset is made available under the Public Domain Dedication and License v1.0 whose full text can be found at [http://www.opendatacommons.org/licenses/pddl/1.0/](http://www.opendatacommons.org/licenses/pddl/1.0/)
+
+[^1]: [Open Science Framework](https://osf.io/7peyq/l)
 
 ### Load packages
 ```{r load-packages, message=FALSE}
@@ -48,7 +52,7 @@ library(osfr) #from osf website
 ```
 
 ### Data Import
-```{r data-import, echo=FALSE}
+```{r data-import}
 
 if(!file.exists("data/mental_health.rda")) {
   cidr <- getwd()
@@ -122,8 +126,8 @@ load("data/mental_health_wrangled.rda")
 ### Exploratory Data Analysis
 
 ```{r}
-skim(red_mh)
-skim(red_mh_mod)
+# skim(red_mh)
+# skim(red_mh_mod)
 ```
 
 ## Data Analysis
