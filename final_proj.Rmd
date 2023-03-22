@@ -1,5 +1,5 @@
 ---
-title: "Replace it"
+title: "Unpacking the Invisible: Exploring the Mental Health Challenges of Living Through a Global Pandemic"
 author: " Carlos van der Ley, Christine Kwon, Connor Bates, Leonardo Gonzalez"
 output: 
   html_document:
@@ -10,25 +10,26 @@ bibliography: references.bib
 link-citations: true
 ---
 
-# Mental Issue Impact 
-
-
-
-## Authors
-
-Carlos van der Ley, Christine Kwon, Connor Bates, Leonardo Gonzalez
-
 ## Introduction
 
-Mental health represents a critical aspect of an individual's overall well being as well as am important branch of Cognitive Science. Understanding not only a single individual's mental health, but also community's discussions and perceptions of mental health are essential to providing people with the help and support that they need. One online platform where community members come together to discuss mental and addiction topics is the online forum Reddit. Beginning in late 2018, the platform collected data from the platforms largest mental health centered communities for nearly two years. Our exploration of mental health discussion will leverage the rich data set provided by the platform in order to explore changes in mental health and addiction discussions in the period leading up to, as well as the beginning of the 2019-2020 pandemic. 
+Mental health represents a critical aspect of an individual's overall well being as well as am important branch of Cognitive Science. Understanding not only a single individual's mental health, but also community's discussions and perceptions of mental health are essential to providing people with the help and support that they need. One online platform where community members come together to discuss mental and addiction topics is the online forum Reddit. Beginning in late 2018, data was collected from the platforms largest mental health centered communities for nearly two years. Our exploration of mental health discussion will leverage the rich data set provided by the platform in order to explore changes in mental health and addiction discussions in the period leading up to, as well as the beginning of the 2019-2020 pandemic. 
+
+Link to the original study [@Low2020-iu]: <br />
+Low , D., Rumker, L., Talkar, T., Torous, J., Cecchi, G., &amp; Ghosh, S. (2020, October 12). Natural language processing reveals vulnerable mental health support groups and heightened health anxiety on reddit during COVID-19: Observational study. Journal of medical Internet research. Retrieved from https://pubmed.ncbi.nlm.nih.gov/32936777/ 
+
+This Dataset was created in conjunction with the National Institutes of Health in order to in to gather a more solid understanding of how online mental health support groups were utilized as a coping mechanism during the beginning of the 2019-2020 Pandemic. According to observational analysis conducted by the World Health Organization, the beginning lockdown period of the COVID-19 Pandemic saw an explosion of Anxiety, Depression, and related disorders [@whoCOVID19Pandemic, 1]. The negative effects of this rapidly growing mental crisis were only compounded by what the World Health Organization describes as a "Gap in Care". As a result of spiking costs in healthcare, impacted medical facilities due to COVID-19 infection, and isolation as a result of lockdowns drove many people to seek help and community online as a proxy for face-to-face treatment [@whoCOVID19Pandemic]. This trend is especially pronounced in younger populations who have less access to traditional health care. <br />
+
+In addition to rising rates of mental health disorders, the American Psychological Association noted that substance use disorders grew significantly during the early stages of the Pandemic [@Abramson2021]. The CDC estimates that usage rates for non-prescribed drugs increased 13% in time period of June 2019 to June 2020 [@Abramson2021]. This added additional stress to an already fragile healthcare system, and resulted in a spike in overdose related deaths across America in particular, but similar trends were visible world wide. <br />      
+
+Given the wealth of data from the Reddit Mental Health data set Team Tiny Models hopes to analyse the use of the Reddit Platform as tool for connecting those with both mental health disorders and substance use disorders over the years leading up to and immediately proceeding the early 2020 lock downs. As a group, we hope to explore the following questions: 
 
 ## Questions
 
-* 1. What is the mental health issue that had more impact during 2020 compared with previous years?
+* 1. What is the mental health disorder issue was the most prominent on the Reddit platform during 2020 when compared with previous years?
 
-* 2. How did economic stress change over the Pandemic (Late 2019, 2020 data), and did it result in changes in a specific emotion over the other (i.e. Anger, Anxiety, General Negative Emotion)
+* 2. How did economic stress change over the Pandemic, and did is it related to changes within emotion (i.e. Anger, Anxiety, General Negative Emotion).
 
-* 3. Do changes in addiction  mirror mental health trends?
+* 3. Do changes within substance use disorder communities mirror trends within mental health communities?
 
 ## Data
 
@@ -71,9 +72,9 @@ library(osfr) #from osf website
 
 ### Data Import
 
-```{r }
+```{r data-import, warning=FALSE}
 
-if(!file.exists("mental_health.rda")) {
+if(!file.exists("data/mental_health_.rda")) {
   cidr <- getwd()
   mkfldr <- "data/"
   dir.create(file.path(cidr, mkfldr), recursive = TRUE)
@@ -98,7 +99,8 @@ Get related mental datasets: select only datasets related to mental health group
 if(!file.exists("data/mental_health.rda")) {
   
   # GET RELATED MENTAL FILES
-  mental_files = "anxiety| |socialanxiety | healthanxiety | autism | adhd | ptsd | lonely | depression | suicidewatch | bipolarreddit | bpd | addiction | alcoholism | schizophrenia"
+  # mental_files = "anxiety | socialanxiety | healthanxiety | autism | adhd | ptsd | lonely | depression | suicidewatch | bipolarreddit | bpd | addiction | alcoholism | schizophrenia"
+    mental_files = "(adhd|anxiety)"
   
   data <- list.files(recursive = TRUE,
                      path = "data/reddit_mental_health_dataset",
@@ -121,7 +123,7 @@ if(!file.exists("data/mental_health.rda")) {
     map_df(bind_rows)
 
   # DROP DUPLICATE USER
-  red_mh <- unique(red_mh)
+  # red_mh <- unique(red_mh)
 
 }
 ```
@@ -192,7 +194,7 @@ if(!file.exists("data/mental_health.rda")) {
   save(red_mh, file="data/mental_health.rda")
   
   # DELETE RAW DATA: 107 FILES, +/- 2.5GB
-  unlink("data/reddit_mental_health_dataset", recursive = TRUE)
+  # unlink("data/reddit_mental_health_dataset", recursive = TRUE)
 }
 ```
 
@@ -209,10 +211,10 @@ load("data/mental_health.rda")
 ### Exploratory Data Analysis
 
 **Summary of the data:**
-Our data has 250881 rows, and 17 columns, with 7 columns as character, and 10 as numeric. Any missing value detected across variables.
+Our data has 85001 rows, and 18 columns, with 6 columns as character, and 12 as numeric. Any missing value detected across variables. The summary of some variables doesn't see right at first glance; for instance, the subreddit variable has **min 7** and **max 13**, but because they are character, so the summary shows the length of each category under that variable. 
 
 ```{r}
-skim(red_mh_mod)
+skim(red_mh)
 ```
 
 ```{r}
