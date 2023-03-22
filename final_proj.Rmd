@@ -1,5 +1,5 @@
 ---
-title: "Replace it"
+title: "Unpacking the Invisible: Exploring the Mental Health Challenges of Living Through a Global Pandemic"
 author: " Carlos van der Ley, Christine Kwon, Connor Bates, Leonardo Gonzalez"
 output: 
   html_document:
@@ -9,14 +9,6 @@ output:
 bibliography: references.bib
 link-citations: true
 ---
-
-# Mental Issue Impact 
-
-
-
-## Authors
-
-Carlos van der Ley, Christine Kwon, Connor Bates, Leonardo Gonzalez
 
 ## Introduction
 
@@ -82,7 +74,7 @@ library(osfr) #from osf website
 
 ```{r data-import, warning=FALSE}
 
-if(!file.exists("data/mental_health.rda")) {
+if(!file.exists("data/mental_health_.rda")) {
   cidr <- getwd()
   mkfldr <- "data/"
   dir.create(file.path(cidr, mkfldr), recursive = TRUE)
@@ -107,7 +99,8 @@ Get related mental datasets: select only datasets related to mental health group
 if(!file.exists("data/mental_health.rda")) {
   
   # GET RELATED MENTAL FILES
-  mental_files = "anxiety| |socialanxiety | healthanxiety | autism | adhd | ptsd | lonely | depression | suicidewatch | bipolarreddit | bpd | addiction | alcoholism | schizophrenia"
+  # mental_files = "anxiety | socialanxiety | healthanxiety | autism | adhd | ptsd | lonely | depression | suicidewatch | bipolarreddit | bpd | addiction | alcoholism | schizophrenia"
+    mental_files = "(adhd|anxiety)"
   
   data <- list.files(recursive = TRUE,
                      path = "data/reddit_mental_health_dataset",
@@ -130,7 +123,7 @@ if(!file.exists("data/mental_health.rda")) {
     map_df(bind_rows)
 
   # DROP DUPLICATE USER
-  red_mh <- unique(red_mh)
+  # red_mh <- unique(red_mh)
 
 }
 ```
@@ -201,7 +194,7 @@ if(!file.exists("data/mental_health.rda")) {
   save(red_mh, file="data/mental_health.rda")
   
   # DELETE RAW DATA: 107 FILES, +/- 2.5GB
-  unlink("data/reddit_mental_health_dataset", recursive = TRUE)
+  # unlink("data/reddit_mental_health_dataset", recursive = TRUE)
 }
 ```
 
@@ -218,7 +211,7 @@ load("data/mental_health.rda")
 ### Exploratory Data Analysis
 
 **Summary of the data:**
-Our data has 250881 rows, and 17 columns, with 7 columns as character, and 10 as numeric. Any missing value detected across variables.
+Our data has 85001 rows, and 18 columns, with 6 columns as character, and 12 as numeric. Any missing value detected across variables. The summary of some variables doesn't see right at first glance; for instance, the subreddit variable has **min 7** and **max 13**, but because they are character, so the summary shows the length of each category under that variable. 
 
 ```{r}
 skim(red_mh)
