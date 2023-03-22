@@ -20,17 +20,15 @@ Carlos van der Ley, Christine Kwon, Connor, Leonardo Gonzalez
 
 ## Introduction
 
-
+Mental health represents a critical aspect of an individual's overall well being as well as am important branch of Cognitive Science. Understanding not only a single individual's mental health, but also community's discussions and perceptions of mental health are essential to providing people with the help and support that they need. One online platform where community members come together to discuss mental and addiction topics is the online forum Reddit. Beginning in late 2018, the platform collected data from the platforms largest mental health centered communities for nearly two years. Our exploration of mental health discussion will leverage the rich data set provided by the platform in order to explore changes in mental health and addiction discussions in the period leading up to, as well as the beginning of the 2019-2020 pandemic. 
 
 ## Questions
 
-**1. **
+* 1. What is the mental health issue that had more impact during 2020 compared with previous years?
 
-**2. **
+* 2. How did economic stress change over the Pandemic (Late 2019, 2020 data), and did it result in changes in a specific emotion over the other (i.e. Anger, Anxiety, General Negative Emotion)
 
-**3. **
-
-**4. **
+* 3. Do changes in addiction  mirror mental health trends?
 
 ## Data
 
