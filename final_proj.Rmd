@@ -1,5 +1,5 @@
 ---
-title: "Replace it"
+title: "Unpacking the Invisible: Exploring the Mental Health Challenges of Living Through a Global Pandemic"
 author: " Carlos van der Ley, Christine Kwon, Connor Bates, Leonardo Gonzalez"
 output: 
   html_document:
@@ -10,15 +10,7 @@ bibliography: references.bib
 link-citations: true
 ---
 
-# Mental Issue Impact 
-
-
-
-## Authors
-
-Carlos van der Ley, Christine Kwon, Connor Bates, Leonardo Gonzalez
-
-## Introduction & Background
+## Introduction
 
 Mental health represents a critical aspect of an individual's overall well being as well as am important branch of Cognitive Science. Understanding not only a single individual's mental health, but also community's discussions and perceptions of mental health are essential to providing people with the help and support that they need. One online platform where community members come together to discuss mental and addiction topics is the online forum Reddit. Beginning in late 2018, data was collected from the platforms largest mental health centered communities for nearly two years. Our exploration of mental health discussion will leverage the rich data set provided by the platform in order to explore changes in mental health and addiction discussions in the period leading up to, as well as the beginning of the 2019-2020 pandemic. 
 
@@ -30,6 +22,8 @@ This Dataset was created in conjunction with the National Institutes of Health i
 In addition to rising rates of mental health disorders, the American Psychological Association noted that substance use disorders grew significantly during the early stages of the Pandemic [@Abramson2021]. The CDC estimates that usage rates for non-prescribed drugs increased 13% in time period of June 2019 to June 2020 [@Abramson2021]. This added additional stress to an already fragile healthcare system, and resulted in a spike in overdose related deaths across America in particular, but similar trends were visible world wide. <br />      
 
 Given the wealth of data from the Reddit Mental Health data set Team Tiny Models hopes to analyse the use of the Reddit Platform as tool for connecting those with both mental health disorders and substance use disorders over the years leading up to and immediately proceeding the early 2020 lock downs. As a group, we hope to explore the following questions: 
+
+## Questions
 
 * 1. What is the mental health disorder issue was the most prominent on the Reddit platform during 2020 when compared with previous years?
 
@@ -78,14 +72,16 @@ library(osfr) #from osf website
 
 ### Data Import
 
-```{r}
-if(!file.exists("mental_health.rda")) {
+```{r data-import, warning=FALSE}
+
+if(!file.exists("data/mental_health_.rda")) {
   cidr <- getwd()
   mkfldr <- "data/"
   dir.create(file.path(cidr, mkfldr), recursive = TRUE)
   osf_retrieve_file("https://osf.io/7peyq/data/input/5efd0743af1156008d3b5532") |>
     osf_download("data/")
 }
+
 ```
 
 ### Data Wrangling
@@ -99,10 +95,12 @@ Steps taken to reshape the data that would be useful for our analysis:
 Get related mental datasets: select only datasets related to mental health groups mentioned previously. The code below will check if data already exists, if so, it will skip this step.
 
 ```{r data-wrangling, message=FALSE}
+
 if(!file.exists("data/mental_health.rda")) {
   
   # GET RELATED MENTAL FILES
-  mental_files = "anxiety| |socialanxiety | healthanxiety | autism | adhd | ptsd | lonely | depression | suicidewatch | bipolarreddit | bpd | addiction | alcoholism | schizophrenia"
+  # mental_files = "anxiety | socialanxiety | healthanxiety | autism | adhd | ptsd | lonely | depression | suicidewatch | bipolarreddit | bpd | addiction | alcoholism | schizophrenia"
+    mental_files = "(adhd|anxiety)"
   
   data <- list.files(recursive = TRUE,
                      path = "data/reddit_mental_health_dataset",
@@ -117,13 +115,16 @@ if(!file.exists("data/mental_health.rda")) {
 Combine datasets and drop duplication: after dataset selection, we combine them all, since they have the same structure. Additionally, because two datasets overlap, **pre**: Dec 2018 to Dec 2019, and **2019**: Jan 1 to April 20, 2019, we filter the data to drop duplicate users.
 
 ```{r}
+
 if(!file.exists("data/mental_health.rda")) {
   
   # COMBINE DATASETS
   red_mh <- data |>
     map_df(bind_rows)
+
   # DROP DUPLICATE USER
-  red_mh <- unique(red_mh)
+  # red_mh <- unique(red_mh)
+
 }
 ```
 
@@ -132,6 +133,7 @@ if(!file.exists("data/mental_health.rda")) {
 Select important features: select only the most useful features among 350 originally.
 
 ```{r}
+
 if(!file.exists("data/mental_health.rda")) {
   
   # SELECT IMPORTANT FEATURES FROM DATASET
@@ -147,6 +149,7 @@ features <- c("subreddit", "author",	"date", "post", "n_words", "sent_neg", "sen
 Split date in year, month, and day: create three new variables for date: year, month, and day, and drop date.
 
 ```{r}
+
 # IF DATA EXISTS IT WILL SKIP THIS STEP
 if(!file.exists("data/mental_health.rda")) {
   
@@ -183,6 +186,7 @@ if(!file.exists("data/mental_health.rda")) {
 Save dataset and delete raw data: save the non-wrangled and wrangled datasets into the data folder, and delete 51 unnecessary and unused datasets from 107 total, releasing about 2.5GB on disk.
 
 ```{r}
+
 # IF DATA EXISTS IT WILL SKIP THIS STEP
 if(!file.exists("data/mental_health.rda")) {
   
@@ -190,13 +194,14 @@ if(!file.exists("data/mental_health.rda")) {
   save(red_mh, file="data/mental_health.rda")
   
   # DELETE RAW DATA: 107 FILES, +/- 2.5GB
-  unlink("data/reddit_mental_health_dataset", recursive = TRUE)
+  # unlink("data/reddit_mental_health_dataset", recursive = TRUE)
 }
 ```
 
 #### Load the data
 
 ```{r}
+
 # LOAD THE DATASET
 load("data/mental_health.rda")
 ```
@@ -206,10 +211,10 @@ load("data/mental_health.rda")
 ### Exploratory Data Analysis
 
 **Summary of the data:**
-Our data has 250881 rows, and 17 columns, with 7 columns as character, and 10 as numeric. Any missing value detected across variables.
+Our data has 85001 rows, and 18 columns, with 6 columns as character, and 12 as numeric. Any missing value detected across variables. The summary of some variables doesn't see right at first glance; for instance, the subreddit variable has **min 7** and **max 13**, but because they are character, so the summary shows the length of each category under that variable. 
 
 ```{r}
-skim(red_mh_mod)
+skim(red_mh)
 ```
 
 ```{r}
@@ -251,24 +256,28 @@ red_mh |>
 ### Question 1:
 
 ```r{}
+
 ```
 -ANSWER QUESTION 1
 
 ### Question 2:
 
 ```r{}
+
 ```
 -ANSWER QUESTION 2
 
 ### Question 3:
 
 ```r{}
+
 ```
 -ANSWER QUESTION 3
 
 ### Question 4:
 
 ```r{}
+
 ```
 
 -ANSWER QUESTION 4
@@ -284,6 +293,3 @@ red_mh |>
 ## Conclusion
 
 -ADD CONCLUSION
-
-
-
