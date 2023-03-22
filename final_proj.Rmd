@@ -1,64 +1,42 @@
 ---
 title: "Replace it"
-author: " Carlos van der Ley, Christine Kwon, Connor Bates, Leonardo Gonzalez"
+author: " Carlos van der Ley, Christine Kwon, Connor, Leonardo Gonzalez"
 output: 
   html_document:
     toc: true
     toc_float: true
     code_folding: hide
-bibliography: references.bib
-link-citations: true
 ---
 
-# Mental Issue Impact 
+## Title (replace it)
 
 
 
 ## Authors
 
-Carlos van der Ley, Christine Kwon, Connor Bates, Leonardo Gonzalez
+Carlos van der Ley, Christine Kwon, Connor, Leonardo Gonzalez
 
 ## Introduction
 
-Mental health represents a critical aspect of an individual's overall well being as well as am important branch of Cognitive Science. Understanding not only a single individual's mental health, but also community's discussions and perceptions of mental health are essential to providing people with the help and support that they need. One online platform where community members come together to discuss mental and addiction topics is the online forum Reddit. Beginning in late 2018, the platform collected data from the platforms largest mental health centered communities for nearly two years. Our exploration of mental health discussion will leverage the rich data set provided by the platform in order to explore changes in mental health and addiction discussions in the period leading up to, as well as the beginning of the 2019-2020 pandemic. 
+
 
 ## Questions
 
-* 1. What is the mental health issue that had more impact during 2020 compared with previous years?
+**1. **
 
-* 2. How did economic stress change over the Pandemic (Late 2019, 2020 data), and did it result in changes in a specific emotion over the other (i.e. Anger, Anxiety, General Negative Emotion)
+**2. **
 
-* 3. Do changes in addiction  mirror mental health trends?
+**3. **
+
+**4. **
 
 ## Data
 
 ### Data Introduction
 
-The original data in this analysis is from Reddit and comprises 107 different datasets, including posts from 15 mental health support groups across 28 subreddits from 2018 to 2020. It was originally used, from January to April 2020, to analyze how COVID-19 affected mental health support groups[@low2020natural]. The dataset was downloaded from Open Science Framework (OSF)[^1], a free and open-source project management tool for researchers. 
 
-**Reddit Mental Health Dataset**
-Contains posts and text features for the following timeframes from 28 mental health and non-mental health subreddits:
-
-* 15 specific mental health support groups (r/EDAnonymous, r/addiction, r/alcoholism, r/adhd, r/anxiety, r/autism, r/bipolarreddit, r/bpd, r/depression, r/healthanxiety, r/lonely, r/ptsd, r/schizophrenia, r/socialanxiety, and r/suicidewatch)  
-* 2 broad mental health subreddits (r/mentalhealth, r/COVID19_support)  
-* 11 non-mental health subr*eddits (r/conspiracy, r/divorce, r/fitness, r/guns, r/jokes, r/legaladvice, r/meditation, r/parenting, r/personalfinance, r/relationships, r/teaching).
-
-Each group has four datasets. For example the adhd group has the following datasets: adhd_2018_features_tfidf256, adhd_2019_features_tfidf256, adhd_post_features_tfidf256, and adhd_pre_features_tfidf256.
-
-* post: Jan 1 to April 20, 2020 (called "mid-pandemic" in manuscript; r/COVID19_support appears). Unique users: 320,364. 
-* pre: Dec 2018 to Dec 2019. A full year which provides more data for a baseline of Reddit * posts. Unique users: 327,289.
-* 2019: Jan 1 to April 20, 2019 (r/EDAnonymous appears). A control for seasonal fluctuations to match post data. Unique users: 282,560.
-* 2018: Jan 1 to April 20, 2018. A control for seasonal fluctuations to match post data. Unique users: 177,089
-
-Unique users across all time windows (pre and 2019 overlap): 826,961.
-
-**License**
-This dataset is made available under the Public Domain Dedication and License v1.0 whose full text can be found at [http://www.opendatacommons.org/licenses/pddl/1.0/](http://www.opendatacommons.org/licenses/pddl/1.0/)
-
-[^1]: [Open Science Framework](https://osf.io/7peyq/l)
 
 ### Load packages
-
 ```{r load-packages, message=FALSE}
 library(tidyverse)
 library(tidymodels)
@@ -70,33 +48,23 @@ library(osfr) #from osf website
 ```
 
 ### Data Import
+```{r}
 
-```{r }
-
-if(!file.exists("mental_health.rda")) {
+if(!file.exists("reddit_mental_health_report.zip")) {
   cidr <- getwd()
   mkfldr <- "data/"
   dir.create(file.path(cidr, mkfldr), recursive = TRUE)
-  osf_retrieve_file("https://osf.io/7peyq/data/input/5efd0743af1156008d3b5532") |>
-    osf_download("data/")
+  osf_retrieve_file("https://osf.io/7peyq/data/input/5efd0743af1156008d3b5532") |> 
+    osf_download("data/") #it works
 }
 
 ```
 
 ### Data Wrangling
 
-The original data after importing comprises 107 different datasets, with 350 variables each, in a 2.6GB compress file, but only 56 are useful for our analysis. These 56 datasets are related to the following mental health groups with four datasets each: anxiety, socialanxiety, healthanxiety,  autism, adhd, ptsd, lonely, depression, suicidewatch, bipolarreddit, bpd, addiction, alcoholism, and schizophrenia.
+```{r data-wrangling}
 
-Steps taken to reshape the data that would be useful for our analysis:
-
-#### Step 1
-
-Get related mental datasets: select only datasets related to mental health groups mentioned previously. The code below will check if data already exists, if so, it will skip this step.
-
-```{r data-wrangling, message=FALSE}
-
-if(!file.exists("data/mental_health.rda")) {
-  
+if(!file.exists("data/mental_health.zip")) {
   # GET RELATED MENTAL FILES
   mental_files = "anxiety| |socialanxiety | healthanxiety | autism | adhd | ptsd | lonely | depression | suicidewatch | bipolarreddit | bpd | addiction | alcoholism | schizophrenia"
   
@@ -105,341 +73,44 @@ if(!file.exists("data/mental_health.rda")) {
                      pattern = mental_files,
                      full.names = TRUE) |>
     purrr::map(~read_csv(.))
-}
-```
-
-#### Step 2
-
-Combine datasets and drop duplication: after dataset selection, we combine them all, since they have the same structure. Additionally, because two datasets overlap, **pre**: Dec 2018 to Dec 2019, and **2019**: Jan 1 to April 20, 2019, we filter the data to drop duplicate users.
-
-```{r}
-
-if(!file.exists("data/mental_health.rda")) {
   
   # COMBINE DATASETS
   red_mh <- data |>
     map_df(bind_rows)
-
-  # DROP DUPLICATE USER
-  red_mh <- unique(red_mh)
-
-}
-```
-
-#### Step 3
-
-Select important features: select only the most useful features among 350 originally.
-
-```{r}
-
-if(!file.exists("data/mental_health.rda")) {
   
   # SELECT IMPORTANT FEATURES FROM DATASET
-features <- c("subreddit", "author",	"date", "post", "n_words", "sent_neg", "sent_neu", "sent_pos", "isolation_total", "economic_stress_total", "domestic_stress_total", "liwc_anger", "liwc_anxiety", "liwc_negative_emotion", "liwc_positive_emotion", "liwc_sadness")
-  
   red_mh <- red_mh |>
-    select(all_of(features))
-}
-```
-
-#### Step 4
-
-Split date in year, month, and day: create three new variables for date: year, month, and day, and drop date.
-
-```{r}
-
-# IF DATA EXISTS IT WILL SKIP THIS STEP
-if(!file.exists("data/mental_health.rda")) {
-  
-  # SPLIT DATE IN YEAR MONTH AND DAY
-  red_mh <- red_mh |>
-    separate(date, c("year", "month", "day"), remove = TRUE)
-  
-}
-```
-
-<!-- #### Step 5 -->
-
-<!-- Pivot sentence sentiment: group variables **sent_neg**, **sent_neu**, and **sent_pos**, that represent a sentiment of a post, into a new variable **post_sentiment**, and change the name of each category by dropping the preffix **sent_**. -->
-
-<!-- Pivot liwc variables: group variables **liwc_anger**, **liwc_anxiety**, **liwc_negative_emotion**, **liwc_positive_emotion**, and **liwc_sadness**, that measure people's sentiment through people's text, into a new variable **liwc**, and change the name of each category by dropping the preffix **liwc_**. -->
-
-<!-- ```{r} -->
-
-<!-- # IF DATA EXISTS IT WILL SKIP THIS STEP -->
-<!-- if(!file.exists("data/mental_health.rda")) { -->
-
-<!--   # PIVOT SENTENCE SENTIMENT -->
-<!--   red_mh_mod <- red_mh_mod |>  -->
-<!--     pivot_longer(sent_neg:sent_pos, names_to = "post_sent", values_to = "prob_sent", names_pattern = "sent_(.*)") -->
-
-<!--   # PIVOT LIWC -->
-<!--   # red_mh_mod <- red_mh_mod |> pivot_longer(liwc_anger:liwc_sadness, names_to = "people_sent", values_to = "people_sent_val", names_pattern = "liwc_(.*)") -->
-
-<!-- } -->
-<!-- ``` -->
-
-#### Step 5
-
-Save dataset and delete raw data: save the non-wrangled and wrangled datasets into the data folder, and delete 51 unnecessary and unused datasets from 107 total, releasing about 2.5GB on disk.
-
-```{r}
-
-# IF DATA EXISTS IT WILL SKIP THIS STEP
-if(!file.exists("data/mental_health.rda")) {
+    select(subreddit, author,	date, sent_neg, sent_neu, sent_pos, isolation_total, domestic_stress_total, liwc_anger, liwc_anxiety, liwc_negative_emotion, liwc_positive_emotion, liwc_sadness)
   
   # SAVE THE FINAL DATASET
   save(red_mh, file="data/mental_health.rda")
   
-  # DELETE RAW DATA: 107 FILES, +/- 2.5GB
+  # DELETE RAW DATA: 107 FILES, +/- 2.6GB
   unlink("data/reddit_mental_health_dataset", recursive = TRUE)
 }
+
 ```
 
 #### Load the data
 
 ```{r}
-
 # LOAD THE DATASET
 load("data/mental_health.rda")
 ```
 
+#### A (may be removed later)
+
+#### B (may be removed later)
+
 ## Analysis
 
-### Exploratory Data Analysis
 
-**Summary of the data:**
-Our data has 250881 rows, and 17 columns, with 7 columns as character, and 10 as numeric. Any missing value detected across variables.
+
+### Exploratory Data Analysis
 
 ```{r}
 skim(red_mh)
 ```
-
-<!-- # EDA LEONARDO -->
-```{r}
-table(red_mh$subreddit)
-```
-
-```{r}
-red_mh |>
-  group_by(subreddit) |>
-  summarize(Negative = (mean(sent_neg) * 100),
-            Neutral = (mean(sent_neu) * 100),
-            Positive = (mean(sent_pos) * 100)) |>
-  pivot_longer(cols = -subreddit, 
-               names_to = "sentiment",
-               values_to = "Percentage of subredditors") |>            
-  ggplot(aes(x = subreddit, y= `Percentage of subredditors` , fill = reorder(sentiment, `Percentage of subredditors`))) +
-  geom_bar(stat = "identity",
-           position = "dodge",
-           color = "black") +
-  guides(fill = guide_legend("sentiment")) +
-  labs(title = "Sentiment of redditors",
-       subtitle = "neutral appear to be used the most frequently") + theme(text = element_text(size = 15))
-```
-
-```{r}
-red_mh |>
-  group_by(subreddit) |>
-  count(sent_neg) |>
-  ggplot(aes(x=subreddit, y=n)) +
-  geom_bar(stat="identity", position=position_dodge()) +
-  labs(x = "Year", y = "Count", title = "Sentiment of redditors") +
-  guides(fill=guide_legend(title="Sentiment of redditors")) + 
-  theme_minimal()
-```
-<!-- # END EDA LEONARDO -->
-
-<!-- # EDA CHRISTINE -->
-
-```{r}
-# separating years
-red_mh <- red_mh |>
-    separate(date, c("year", "month", "day"), remove = TRUE)
-```
-
-code from cs02 question 3 (flavors)
-
-```{r}
-red_mh |>
-  group_by(year) |>
-  summarize(Words = mean(n_words)) |>
-  rename(Year = year) |>
-  ggplot(aes(y = Words,
-             x = Year)) +
-  geom_bar(stat = "identity",
-           position = "dodge",
-           color = "black") +
-  theme_linedraw() +
-  guides(fill = guide_legend("Flavor")) +
-  labs(title = "What flavors appear to be used the most frequently?",
-       subtitle = "Flavors of tobacco products used in the past 30 days") + theme(text = element_text(size = 15))
-```
-
-
-```{r}
-red_mh |>
-  group_by(year) |>
-  summarize(Negative = (mean(sent_neg) * 100),
-            Neutral = (mean(sent_neu) * 100),
-            Positive = (mean(sent_pos) * 100)) |>
-  pivot_longer(cols = -year, 
-               names_to = "Type",
-               values_to = "Percentage") |>
-  rename(Year = year) |>
-  ggplot(aes(y = Percentage,
-             x = Year,
-             fill = reorder(Type, Percentage))) +
-  geom_bar(stat = "identity",
-           position = "dodge",
-           color = "black") +
-  theme_linedraw() +
-  guides(fill = guide_legend("Flavor")) +
-  labs(title = "What flavors appear to be used the most frequently?",
-       subtitle = "Flavors of tobacco products used in the past 30 days") + theme(text = element_text(size = 15))
-```
-```{r}
-red_mh |>
-  group_by(year) |>
-  summarize(Isolation = mean(isolation_total),
-            Economic = mean(economic_stress_total),
-            Domestic = mean(domestic_stress_total)) |>
-  pivot_longer(cols = -year, 
-               names_to = "Type",
-               values_to = "Percentage") |>
-  rename(Year = year) |>
-  ggplot(aes(y = Percentage,
-             x = Year,
-             fill = reorder(Type, Percentage))) +
-  geom_bar(stat = "identity",
-           position = "dodge",
-           color = "black") +
-  theme_linedraw() +
-  guides(fill = guide_legend("Flavor")) +
-  labs(title = "What flavors appear to be used the most frequently?",
-       subtitle = "Flavors of tobacco products used in the past 30 days") + theme(text = element_text(size = 15))
-```
-```{r}
-red_mh |>
-  group_by(year) |>
-  summarize(Anger = mean(liwc_anger),
-            Anxiety = mean(liwc_anxiety),
-            Sadness = mean(liwc_sadness)) |>
-  pivot_longer(cols = -year, 
-               names_to = "Type",
-               values_to = "Percentage") |>
-  rename(Year = year) |>
-  ggplot(aes(y = Percentage,
-             x = Year,
-             fill = reorder(Type, Percentage))) +
-  geom_bar(stat = "identity",
-           position = "dodge",
-           color = "black") +
-  theme_linedraw() +
-  guides(fill = guide_legend("Flavor")) +
-  labs(title = "What flavors appear to be used the most frequently?",
-       subtitle = "Flavors of tobacco products used in the past 30 days") + theme(text = element_text(size = 15))
-```
-```{r}
-red_mh |>
-  group_by(year) |>
-  summarize(Positive = mean(liwc_positive_emotion),
-            Negative = mean(liwc_negative_emotion)) |>
-  pivot_longer(cols = -year, 
-               names_to = "Type",
-               values_to = "Percentage") |>
-  rename(Year = year) |>
-  ggplot(aes(y = Percentage,
-             x = Year,
-             fill = reorder(Type, Percentage))) +
-  geom_bar(stat = "identity",
-           position = "dodge",
-           color = "black") +
-  theme_linedraw() +
-  guides(fill = guide_legend("Flavor")) +
-  labs(title = "What flavors appear to be used the most frequently?",
-       subtitle = "Flavors of tobacco products used in the past 30 days") + theme(text = element_text(size = 15))
-```
-
-do different mental health/emotional states affect the number of words you write in a post?
-
-### Analysis
-
-do different mental health/emotional states affect the number of words you write in a post?
-
-fit a linear model with all variables
-
-tidy version
-```{r}
-lm<- linear_reg() |>
-  set_engine("lm") |>
-  fit(n_words ~ 
-        sent_neg +
-        sent_neu +
-        sent_pos +
-        isolation_total +
-        economic_stress_total +
-        domestic_stress_total +
-        liwc_anger +
-        liwc_anxiety +
-        liwc_negative_emotion +
-        liwc_positive_emotion +
-        liwc_sadness,
-      data = red_mh)
-tidy(lm)
-```
-
-summary version (to see which pvalues were significant)
-```{r}
-lm2 <- lm(n_words ~ 
-        sent_neg +
-        sent_neu +
-        sent_pos +
-        isolation_total +
-        economic_stress_total +
-        domestic_stress_total +
-        liwc_anger +
-        liwc_anxiety +
-        liwc_negative_emotion +
-        liwc_positive_emotion +
-        liwc_sadness,
-      data = red_mh)
-summary(lm2)
-```
-
-
-calculated vif for multicolinearity
-```{r}
-# vif_red <- vif(lm2)
-# vif_red
-```
-
-
-final model after taking out high vif variables
-
-insert interpretation...
-
-```{r}
-lm3 <- lm(n_words ~ 
-        sent_neu +
-        isolation_total +
-        economic_stress_total +
-        domestic_stress_total +
-        liwc_anger +
-        liwc_anxiety +
-        liwc_negative_emotion +
-        liwc_positive_emotion +
-        liwc_sadness,
-      data = red_mh)
-summary(lm3)
-vif_red2 <- vif(lm3)
-vif_red2
-
-
-#VIF <- rbind(vif_red,c(0,0,vif_red2))
-```
-
-<!-- # END EDA CHRISTINE -->
 
 ## Data Analysis
 
