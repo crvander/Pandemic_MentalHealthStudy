@@ -10,13 +10,13 @@ bibliography: references.bib
 link-citations: true
 ---
 
-## Title (replace it)
+# Mental Issue Impact 
 
 
 
 ## Authors
 
-Carlos van der Ley, Christine Kwon, Connor, Leonardo Gonzalez
+Carlos van der Ley, Christine Kwon, Connor Bates, Leonardo Gonzalez
 
 ## Introduction
 
@@ -152,34 +152,34 @@ Split date in year, month, and day: create three new variables for date: year, m
 if(!file.exists("data/mental_health.rda")) {
   
   # SPLIT DATE IN YEAR MONTH AND DAY
-  red_mh_mod <- red_mh |>
+  red_mh <- red_mh |>
     separate(date, c("year", "month", "day"), remove = TRUE)
   
 }
 ```
 
+<!-- #### Step 5 -->
+
+<!-- Pivot sentence sentiment: group variables **sent_neg**, **sent_neu**, and **sent_pos**, that represent a sentiment of a post, into a new variable **post_sentiment**, and change the name of each category by dropping the preffix **sent_**. -->
+
+<!-- Pivot liwc variables: group variables **liwc_anger**, **liwc_anxiety**, **liwc_negative_emotion**, **liwc_positive_emotion**, and **liwc_sadness**, that measure people's sentiment through people's text, into a new variable **liwc**, and change the name of each category by dropping the preffix **liwc_**. -->
+
+<!-- ```{r} -->
+
+<!-- # IF DATA EXISTS IT WILL SKIP THIS STEP -->
+<!-- if(!file.exists("data/mental_health.rda")) { -->
+
+<!--   # PIVOT SENTENCE SENTIMENT -->
+<!--   red_mh_mod <- red_mh_mod |>  -->
+<!--     pivot_longer(sent_neg:sent_pos, names_to = "post_sent", values_to = "prob_sent", names_pattern = "sent_(.*)") -->
+
+<!--   # PIVOT LIWC -->
+<!--   # red_mh_mod <- red_mh_mod |> pivot_longer(liwc_anger:liwc_sadness, names_to = "people_sent", values_to = "people_sent_val", names_pattern = "liwc_(.*)") -->
+
+<!-- } -->
+<!-- ``` -->
+
 #### Step 5
-
-Pivot sentence sentiment: group variables **sent_neg**, **sent_neu**, and **sent_pos**, that represent a sentiment of a post, into a new variable **post_sentiment**, and change the name of each category by dropping the preffix **sent_**.
-
-Pivot liwc variables: group variables **liwc_anger**, **liwc_anxiety**, **liwc_negative_emotion**, **liwc_positive_emotion**, and **liwc_sadness**, that measure people's sentiment through people's text, into a new variable **liwc**, and change the name of each category by dropping the preffix **liwc_**.
-
-```{r}
-
-# IF DATA EXISTS IT WILL SKIP THIS STEP
-if(!file.exists("data/mental_health.rda")) {
-  
-  # PIVOT SENTENCE SENTIMENT
-  red_mh_mod <- red_mh_mod |> 
-    pivot_longer(sent_neg:sent_pos, names_to = "post_sent", values_to = "prob_sent", names_pattern = "sent_(.*)")
-  
-  # PIVOT LIWC
-  # red_mh_mod <- red_mh_mod |> pivot_longer(liwc_anger:liwc_sadness, names_to = "people_sent", values_to = "people_sent_val", names_pattern = "liwc_(.*)")
-  
-}
-```
-
-#### Step 6
 
 Save dataset and delete raw data: save the non-wrangled and wrangled datasets into the data folder, and delete 51 unnecessary and unused datasets from 107 total, releasing about 2.5GB on disk.
 
@@ -190,7 +190,6 @@ if(!file.exists("data/mental_health.rda")) {
   
   # SAVE THE FINAL DATASET
   save(red_mh, file="data/mental_health.rda")
-  save(red_mh_mod, file="data/mental_health_wrangled.rda")
   
   # DELETE RAW DATA: 107 FILES, +/- 2.5GB
   unlink("data/reddit_mental_health_dataset", recursive = TRUE)
@@ -203,22 +202,52 @@ if(!file.exists("data/mental_health.rda")) {
 
 # LOAD THE DATASET
 load("data/mental_health.rda")
-load("data/mental_health_wrangled.rda")
 ```
-
-#### A (may be removed later)
-
-#### B (may be removed later)
 
 ## Analysis
 
-
-
 ### Exploratory Data Analysis
 
+**Summary of the data:**
+Our data has 250881 rows, and 17 columns, with 7 columns as character, and 10 as numeric. Any missing value detected across variables.
+
 ```{r}
-skim(red_mh)
+skim(red_mh_mod)
 ```
+
+```{r}
+table(red_mh$subreddit)
+```
+
+```{r}
+red_mh |>
+  group_by(subreddit) |>
+  summarize(Negative = (mean(sent_neg) * 100),
+            Neutral = (mean(sent_neu) * 100),
+            Positive = (mean(sent_pos) * 100)) |>
+  pivot_longer(cols = -subreddit, 
+               names_to = "sentiment",
+               values_to = "Percentage of subredditors") |>            
+  ggplot(aes(x = subreddit, y= `Percentage of subredditors` , fill = reorder(sentiment, `Percentage of subredditors`))) +
+  geom_bar(stat = "identity",
+           position = "dodge",
+           color = "black") +
+  guides(fill = guide_legend("sentiment")) +
+  labs(title = "Sentiment of redditors",
+       subtitle = "neutral appear to be used the most frequently") + theme(text = element_text(size = 15))
+```
+
+```{r}
+red_mh |>
+  group_by(subreddit) |>
+  count(sent_neg) |>
+  ggplot(aes(x=subreddit, y=n)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  labs(x = "Year", y = "Count", title = "Sentiment of redditors") +
+  guides(fill=guide_legend(title="Sentiment of redditors")) + 
+  theme_minimal()
+```
+
 
 ## Data Analysis
 
