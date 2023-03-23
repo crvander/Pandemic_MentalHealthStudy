@@ -32,6 +32,8 @@ Given the wealth of data from the Reddit Mental Health data set Team Tiny Models
 * 3. Do changes within substance use disorder communities mirror trends within mental health communities?
 
 * 4. Do different mental health/emotional states affect the number of words you write in a post?
+<!-- compare in each subreddit (plot face_wrap)  -->
+<!-- how commom is author in more than one subreddit? -->
 
 ## Data
 
@@ -68,7 +70,9 @@ library(tidymodels)
 library(forcats)
 library(olsrr)
 library(skimr)
+library(viridis)
 library(srvyr)
+library(scale)
 library(osfr) #from osf website
 ```
 
@@ -94,7 +98,7 @@ Steps taken to reshape the data that would be useful for our analysis:
 
 #### Step 1
 
-Get related mental datasets: select only datasets related to mental health groups mentioned previously. The code below will check if data already exists, if so, it will skip this step.
+**Get related mental datasets:** select only datasets related to mental health groups mentioned previously. The code below will check if data already exists, if so, it will skip this step.
 
 ```{r data-wrangling, message=FALSE}
 
@@ -114,7 +118,7 @@ if(!file.exists("data/mental_health.rda")) {
 
 #### Step 2
 
-Combine datasets and drop duplication: after dataset selection, we combine them all, since they have the same structure. Additionally, because two datasets overlap, **pre**: Dec 2018 to Dec 2019, and **2019**: Jan 1 to April 20, 2019, we filter dataset to drop duplicate data.
+**Combine datasets:** after dataset selection, we combine them all, since they have the same structure.
 
 ```{r}
 
@@ -124,15 +128,12 @@ if(!file.exists("data/mental_health.rda")) {
   red_mh <- data |>
     map_df(bind_rows)
 
-  # DROP DUPLICATE USER
-  red_mh <- unique(red_mh)
-
 }
 ```
 
 #### Step 3
 
-Select important features: select only the most useful features among 350 originally.
+**Select important features:** select only the most useful features among 350 originally.
 
 ```{r}
 
@@ -147,6 +148,17 @@ features <- c("subreddit", "author",	"date", "post", "n_words", "sent_neg", "sen
 ```
 
 #### Step 4
+
+**drop duplication:**  Because two datasets overlap, **pre**: Dec 2018 to Dec 2019, and **2019**: Jan 1 to April 20, 2019, we will drop duplicate data.
+
+```{r}
+
+  # DROP DUPLICATE USER
+  red_mh <- unique(red_mh)
+
+```
+
+#### Step 5
 
 Split date in year, month, and day: create three new variables for date: year, month, and day, and drop date.
 
@@ -183,7 +195,7 @@ if(!file.exists("data/mental_health.rda")) {
 <!-- } -->
 <!-- ``` -->
 
-#### Step 5
+#### Step 6
 
 Save dataset and delete raw data: save the non-wrangled and wrangled datasets into the data folder, and delete 51 unnecessary and unused datasets from 107 total, releasing about 2.5GB on disk.
 
