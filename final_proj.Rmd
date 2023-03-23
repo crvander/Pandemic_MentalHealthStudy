@@ -74,7 +74,6 @@ library(zoo)
 ### Data Import
 
 ```{r data-import, warning=FALSE}
-
 if(!file.exists("data/mental_health_.rda")) {
   cidr <- getwd()
   mkfldr <- "data/"
@@ -202,7 +201,6 @@ if(!file.exists("data/mental_health.rda")) {
 #### Load the data
 
 ```{r}
-
 # LOAD THE DATASET
 load("data/mental_health.rda")
 ```
@@ -214,14 +212,13 @@ load("data/mental_health.rda")
 **Summary of the data:**
 Our data has 85001 rows, and 18 columns, with 6 columns as character, and 12 as numeric. Any missing value detected across variables. The summary of some variables doesn't see right at first glance; for instance, the subreddit variable has **min 7** and **max 13**, but because they are character, so the summary shows the length of each category under that variable. 
 
+###General Analysis
+In order to produce our analysis and exploration a curesory understanding of the data is necessary. We'll first use the skim() function to quickly gain a rough understanding of general values for each variable.
 ```{r}
 skim(red_mh)
 ```
 
-```{r}
-table(red_mh$subreddit)
-```
-
+Lets take a rough look at the average sentiment across each of the individual subreddits. This will give us a rough idea of how postive or negative each community is. 
 ```{r}
 red_mh |>
   group_by(subreddit) |>
@@ -236,24 +233,25 @@ red_mh |>
            position = "dodge",
            color = "black") +
   guides(fill = guide_legend("sentiment")) +
+  coord_flip() + 
   labs(title = "Sentiment of redditors",
        subtitle = "neutral appear to be used the most frequently") + theme(text = element_text(size = 15))
 ```
-
+Next we want to get a rough understanding of how large each subbreddit is in relation to one another. There are a few ways of judging this, but to 
 ```{r}
 red_mh |>
   group_by(subreddit) |>
   count(sent_neg) |>
   ggplot(aes(x=subreddit, y=n)) +
   geom_bar(stat="identity", position=position_dodge()) +
-  labs(x = "Year", y = "Count", title = "Sentiment of redditors") +
-  guides(fill=guide_legend(title="Sentiment of redditors")) + 
+  labs(x = "Individual Subredditss", y = "Count", title = "Total Post Count") +
+  guides(fill=guide_legend(title="Sentiment of redditors")) +
+  coord_flip() + 
   theme_minimal()
 ```
 
-```{r}
-table(red_mh$subreddit)
-```
+###Question 4 
+
 In order to explore the relationship between substance abuse community data and the WHO's inference that these communities be driven online. If this inference were to be true, we should see that regardless of sentiment, there should in theory be more and longer posts to the substance abuse communities. This would represent an increases in community engagement. Because there are gaps in the data, we will be limiting the exploration the time period of January to April for both 2019 and 2020. This represents the very beginnings of the Pandemic Lockdowns where we would expect to see changes.   
 
 In order to look into the activity on addiction related subreddits, it makes sense to analyse the frequency and length of new posts to the individual subreddits. As there is a time gap within the data we have selected to analyse the January to June period of both 2019 and 2020 and compare the two. I decided to smoothe the graphic to a 7 day rolling average in order to reduce some noise.  
@@ -297,7 +295,8 @@ Given the charts above, we see that there was increased usage of the addiction a
 Plotting the data 
 
 ```{r}
-post_data2020 <- post_data2020 |> 
+
+post_data2020 |> 
   group_by(Date) |>
   summarise(mean_count = mean(n_words)) |>
   ggplot(aes(x = Date, y = mean_count)) +
@@ -309,8 +308,7 @@ post_data2020 <- post_data2020 |>
   ylab("Length of Post (words)") +
   labs(title = "The Length of Addiction Related Posts over Time Jan-Apr 2020")
   
-
-post_data2019 <- post_data2019 |> 
+post_data2019 |> 
   group_by(Date) |>
   summarise(mean_count = mean(n_words)) |>
   ggplot(aes(x = Date, y = mean_count)) +
@@ -321,9 +319,6 @@ post_data2019 <- post_data2019 |>
   xlab("Date") +
   ylab("Mean Length of Posts (words)") +
   labs(title = "The Length of Addiction Related Posts over Time Jan-Apr 2019") 
-
-post_data2020
-post_data2019
 ```
 
 Now that we can infer that posts within addiction related subreddits were both more frequent and were as long as posts from the same period the prior year. From this we can infer that during the early months of 2020 there was more global engagement than in the same period of 2019.
@@ -359,7 +354,83 @@ post_data2019 |>
   labs(title = "Mean sentiment accross posts for JAN-APR 2020")
 
 ```
-When looking at the average sentiment across posts for each day, there doesn't seem to be much of a change between the JAN-APR 2019 and JAN-APR of 2020 time periods.  
+When looking at the average sentiment across posts for each day, there doesn't seem to be much of a change between the JAN-APR 2019 and JAN-APR of 2020 time periods.
+
+Analysing the negative sentiment data from the substance abuse communities, we decided to focus on what contributed to a 
+```{r}
+use_senti2019 <- lm(sent_neg ~ n_words +
+                            sent_neu +
+                            sent_pos +
+                            liwc_anger +
+                            liwc_anxiety +
+                            liwc_negative_emotion +
+                            liwc_positive_emotion +
+                            liwc_sadness +
+                            economic_stress_total +
+                            isolation_total +
+                            domestic_stress_total, data = post_data2019)
+
+glance(use_senti2019)
+use_senti2019
+
+
+use_senti2020 <- lm(sent_neg ~ n_words +
+                            sent_neu +
+                            sent_pos +
+                            liwc_anger +
+                            liwc_anxiety +
+                            liwc_negative_emotion +
+                            liwc_positive_emotion +
+                            liwc_sadness +
+                            economic_stress_total +
+                            isolation_total +
+                            domestic_stress_total, data = post_data2020)
+
+glance(use_senti2020)
+use_senti2020
+```
+Accounting for the two separate years, a similar model used between the two time periods explain significantly different amounts of variation. The posts from the 2019 time period were much more correlated with the other data. The Pandemic likely served as a significant confound. 
+
+Another interesting idea of the substance abuse subreddits is the idea that negative or positive posts generally influencing the length of post. 
+```{r}
+len_predict2019 <- lm(n_words ~ sent_neg +
+                            sent_neu +
+                            sent_pos +
+                            liwc_anger +
+                            liwc_anxiety +
+                            liwc_negative_emotion +
+                            liwc_positive_emotion +
+                            liwc_sadness +
+                            economic_stress_total +
+                            isolation_total +
+                            domestic_stress_total, data = post_data2020)
+
+ols_step_backward_p(len_predict2019)
+glance(len_predict2019)
+len_predict2019
+
+
+len_predict2020 <- lm(n_words ~ sent_neg +
+                            sent_neu +
+                            sent_pos +
+                            liwc_anger +
+                            liwc_anxiety +
+                            liwc_negative_emotion +
+                            liwc_positive_emotion +
+                            liwc_sadness +
+                            economic_stress_total +
+                            isolation_total +
+                            domestic_stress_total, data = post_data2020)
+
+ols_step_backward_p(len_predict2020)
+ols_step_backward_p(len_predict2020)
+
+glance(len_predict2020)
+len_predict2020
+```
+Interestingly the length of substance abuse related posting is strongly explained by the emotional content of the posting itself. Each model is sitting at ~82% of total variation explained. Posts that are sadder and angrier are shorter, while those that exhibit more general negative emotions or happiness tend to be longer in length. The ols step back methhod indicated thatt the sent_pos was cut, this makes sense as it should generally just be the inverse of the sent_neg and not providing eficacy to the model. 
+
+All in all the Substance Abuse Data shows that communities centered around communal aide and coping with use disorders grew and were generally more active during the 2020 Pandemic than they were in the similar time window for 2019. That said, there were little sentiment changes between the two time windows, and what the make up of posts was relatively consistent. 
 
 ## Data Analysis
 
@@ -379,34 +450,13 @@ When looking at the average sentiment across posts for each day, there doesn't s
 
 ### Question 3:
 
-```{}
+```{r}
 
 ```
 -ANSWER QUESTION 3
 
 ### Question 4:
-Analysing the negative sentiment data from the substance abuse communities, we decided to focus on what contributed to a 
-```{r}
-use_senti2019 <- lm(sent_neg ~ n_words +
-                      liwc_anger +
-                      liwc_negative_emotion +
-                      liwc_positive_emotion +  
-                      liwc_sadness, data = post_data2019)
 
-glance(use_senti2019)
-use_senti2019
-
-
-use_senti2020 <- lm(sent_neg ~ n_words +
-                      liwc_anger +
-                      liwc_negative_emotion +
-                      liwc_positive_emotion +  
-                      liwc_sadness, data = post_data2020)
-
-glance(use_senti2020)
-use_senti2020
-```
-Accounting for the two separate years, a similar model used between the two time periods explain significantly different amounts of variation. The posts from the 2019 time period were much more correlated with the other data. The Pandemic likely served as a significant confound. 
 ## Modeling
 
 -ADD MODELS HERE
