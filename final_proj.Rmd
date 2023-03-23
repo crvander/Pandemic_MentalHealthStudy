@@ -31,6 +31,8 @@ Given the wealth of data from the Reddit Mental Health data set Team Tiny Models
 
 * 3. Do changes within substance use disorder communities mirror trends within mental health communities?
 
+* 4. Do different mental health/emotional states affect the number of words you write in a post?
+
 ## Data
 
 ### Data Introduction
@@ -74,13 +76,13 @@ library(osfr) #from osf website
 
 ```{r data-import, warning=FALSE}
 
-if(!file.exists("data/mental_health_.rda")) {
-  cidr <- getwd()
-  mkfldr <- "data/"
-  dir.create(file.path(cidr, mkfldr), recursive = TRUE)
-  osf_retrieve_file("https://osf.io/7peyq/data/input/5efd0743af1156008d3b5532") |>
-    osf_download("data/")
-}
+# if(!file.exists("data/mental_health_.rda")) {
+#   cidr <- getwd()
+#   mkfldr <- "data/"
+#   dir.create(file.path(cidr, mkfldr), recursive = TRUE)
+#   osf_retrieve_file("https://osf.io/7peyq/data/input/5efd0743af1156008d3b5532") |>
+#     osf_download("data/")
+# }
 
 ```
 
@@ -99,8 +101,8 @@ Get related mental datasets: select only datasets related to mental health group
 if(!file.exists("data/mental_health.rda")) {
   
   # GET RELATED MENTAL FILES
-  # mental_files = "anxiety | socialanxiety | healthanxiety | autism | adhd | ptsd | lonely | depression | suicidewatch | bipolarreddit | bpd | addiction | alcoholism | schizophrenia"
-    mental_files = "(adhd|anxiety)"
+  mental_files = "anxiety|autism|adhd|ptsd|lonely|depression|suicidewatch|bipolarreddit|bpd|addiction|alcoholism|schizophrenia"
+    # mental_files = "adhd|anxiety"
   
   data <- list.files(recursive = TRUE,
                      path = "data/reddit_mental_health_dataset",
@@ -112,7 +114,7 @@ if(!file.exists("data/mental_health.rda")) {
 
 #### Step 2
 
-Combine datasets and drop duplication: after dataset selection, we combine them all, since they have the same structure. Additionally, because two datasets overlap, **pre**: Dec 2018 to Dec 2019, and **2019**: Jan 1 to April 20, 2019, we filter the data to drop duplicate users.
+Combine datasets and drop duplication: after dataset selection, we combine them all, since they have the same structure. Additionally, because two datasets overlap, **pre**: Dec 2018 to Dec 2019, and **2019**: Jan 1 to April 20, 2019, we filter dataset to drop duplicate data.
 
 ```{r}
 
@@ -123,7 +125,7 @@ if(!file.exists("data/mental_health.rda")) {
     map_df(bind_rows)
 
   # DROP DUPLICATE USER
-  # red_mh <- unique(red_mh)
+  red_mh <- unique(red_mh)
 
 }
 ```
@@ -211,7 +213,7 @@ load("data/mental_health.rda")
 ### Exploratory Data Analysis
 
 **Summary of the data:**
-Our data has 85001 rows, and 18 columns, with 6 columns as character, and 12 as numeric. Any missing value detected across variables. The summary of some variables doesn't see right at first glance; for instance, the subreddit variable has **min 7** and **max 13**, but because they are character, so the summary shows the length of each category under that variable. 
+Our data has 390119 rows, and 18 columns, with 6 columns as character, and 12 as numeric. Any missing value detected across variables. The summary of some variables doesn't see right at first glance; for instance, the subreddit variable has **min 3** and **max 13**, but because they are character, so the summary shows the length of each category under that variable. We have an average 184 words per post, which will help answer one of our questions. Also we see 
 
 ```{r}
 skim(red_mh)
