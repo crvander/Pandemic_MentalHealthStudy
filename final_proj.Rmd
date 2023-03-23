@@ -29,7 +29,7 @@ Given the wealth of data from the Reddit Mental Health data set Team Tiny Models
 
 * 2. How did economic stress change over the Pandemic, and did is it related to changes within emotion (i.e. Anger, Anxiety, General Negative Emotion).
 
-* 3. Do changes within substance use disorder communities mirror trends within mental health communities?
+* 3. Is the WHO right about support groups being pushed onto the internet, does posting habits within substance abuse communities change between Pre-pandemic and during the Pandemic.
 
 ## Data
 
@@ -68,6 +68,7 @@ library(olsrr)
 library(skimr)
 library(srvyr)
 library(osfr) #from osf website
+library(zoo)
 ```
 
 ### Data Import
@@ -250,6 +251,115 @@ red_mh |>
   theme_minimal()
 ```
 
+```{r}
+table(red_mh$subreddit)
+```
+In order to explore the relationship between substance abuse community data and the WHO's inference that these communities be driven online. If this inference were to be true, we should see that regardless of sentiment, there should in theory be more and longer posts to the substance abuse communities. This would represent an increases in community engagement. Because there are gaps in the data, we will be limiting the exploration the time period of January to April for both 2019 and 2020. This represents the very beginnings of the Pandemic Lockdowns where we would expect to see changes.   
+
+In order to look into the activity on addiction related subreddits, it makes sense to analyse the frequency and length of new posts to the individual subreddits. As there is a time gap within the data we have selected to analyse the January to June period of both 2019 and 2020 and compare the two. I decided to smoothe the graphic to a 7 day rolling average in order to reduce some noise.  
+```{r}
+#Unify the date object to make analysis easier. 
+red_mh$Date <- as.Date(with(red_mh, paste(year, month, day,sep="-")), "%Y-%m-%d")
+
+#Filter the data for the addiction related subreddits
+post_data <- red_mh[red_mh$subreddit %in% c('addiction','alcoholism'),] |>
+  drop_na(Date)
+
+#Identify the time window
+post_data2020 <- post_data[(post_data$Date >= as.Date("2020-01-01")) & (post_data$Date <= as.Date("2020-04-01")),]
+post_data2019 <- post_data[(post_data$Date >= as.Date("2019-01-01")) & (post_data$Date <= as.Date("2019-04-01")),] 
+
+#Generate a chart of the Date and subreddit data charting the amount of posts per dat 
+post_data2020 |>
+  group_by(Date, subreddit) %>% 
+  summarise(total_count=n(),.groups = 'drop') |>
+  ggplot(aes(x=Date, y=total_count, group=subreddit, color=subreddit)) +
+  geom_line(aes(y=rollmean(total_count, 7, na.pad=TRUE))) +
+  geom_line(aes(y = mean(total_count)), color="darkred") +
+  #geom_hline(yintercept = mean(total_count), color="blue") +
+  xlab("Date") +
+  ylab("Posts per Day (Count)") +
+  labs(title = "Posts per Day on Addiction Related Subreddits Jan-Apr 2020")
+
+post_data2019 |>
+  group_by(Date, subreddit) %>% 
+  summarise(total_count=n(),.groups = 'drop') |>
+  ggplot(aes(x=Date, y=total_count, group=subreddit, color=subreddit)) +
+  geom_line(aes(y=rollmean(total_count, 7, na.pad=TRUE))) +
+  geom_line(aes(y = mean(total_count)), color="darkred") +
+  #geom_hline(yintercept = mean(total_count), color="red") + 
+  xlab("Date") +
+  ylab("Posts per Day (Count)") +
+  labs(title = "Posts per Day on Addiction Related Subreddits Jan-Apr 2019")
+
+```
+Given the charts above, we see that there was increased usage of the addiction and alcoholism communities. We saw on average ~1 post more than in the same period than the year before. In order to gauge engagement we should next check to see if the post length changed. Shorter but more frequent posts may indicate that post-frequency may indicate spam or or other artificial growth of the data. 
+Plotting the data 
+
+```{r}
+post_data2020 <- post_data2020 |> 
+  group_by(Date) |>
+  summarise(mean_count = mean(n_words)) |>
+  ggplot(aes(x = Date, y = mean_count)) +
+  geom_col(position = 'dodge') +
+  geom_line(aes(y = mean(mean_count)), color="darkred") +
+  
+  #Fix up the format so that it is legible
+  xlab("Date") +
+  ylab("Length of Post (words)") +
+  labs(title = "The Length of Addiction Related Posts over Time Jan-Apr 2020")
+  
+
+post_data2019 <- post_data2019 |> 
+  group_by(Date) |>
+  summarise(mean_count = mean(n_words)) |>
+  ggplot(aes(x = Date, y = mean_count)) +
+  geom_col(position = 'dodge') +
+  geom_line(aes(y = mean(mean_count)), color="darkred") + 
+  
+  #Fix up the format so that it is legible
+  xlab("Date") +
+  ylab("Mean Length of Posts (words)") +
+  labs(title = "The Length of Addiction Related Posts over Time Jan-Apr 2019") 
+
+post_data2020
+post_data2019
+```
+
+Now that we can infer that posts within addiction related subreddits were both more frequent and were as long as posts from the same period the prior year. From this we can infer that during the early months of 2020 there was more global engagement than in the same period of 2019.
+```{r}
+post_data2020 |>
+  group_by(Date) %>% 
+  summarise(mean_pos = mean(sent_pos),
+            mean_neu = mean(sent_neu),
+            mean_neg= mean(sent_neg),
+            .groups = 'drop') |>
+  ggplot(aes(x=Date)) +
+  geom_line(aes(y = mean_pos, color = "Positive Sentiment")) + 
+  geom_line(aes(y = mean_neu, color = "Neutral Sentiment")) +
+  geom_line(aes(y = mean_neg, color = "Negative Sentiment")) +
+  scale_color_manual(name = "Y series", values = c("Positive Sentiment" = "darkred", "Neutral Sentiment" = "blue", "Negative Sentiment" = "green"))+
+  xlab("Date") +
+  ylab("Sentiment Proportion") +
+  labs(title = "Mean sentiment accross posts for JAN-APR 2019")
+
+post_data2019 |>
+  group_by(Date) %>% 
+  summarise(mean_pos = mean(sent_pos),
+            mean_neu = mean(sent_neu),
+            mean_neg= mean(sent_neg),
+            .groups = 'drop') |>
+  ggplot(aes(x=Date)) +
+  geom_line(aes(y = mean_pos, color = "Positive Sentiment")) + 
+  geom_line(aes(y = mean_neu, color = "Neutral Sentiment")) +
+  geom_line(aes(y = mean_neg, color = "Negative Sentiment")) +
+  scale_color_manual(name = "Y series", values = c("Positive Sentiment" = "darkred", "Neutral Sentiment" = "blue", "Negative Sentiment" = "green"))+
+  xlab("Date") +
+  ylab("Sentiment Proportion") +
+  labs(title = "Mean sentiment accross posts for JAN-APR 2020")
+
+```
+When looking at the average sentiment across posts for each day, there doesn't seem to be much of a change between the JAN-APR 2019 and JAN-APR of 2020 time periods.  
 
 ## Data Analysis
 
@@ -269,19 +379,34 @@ red_mh |>
 
 ### Question 3:
 
-```r{}
+```{}
 
 ```
 -ANSWER QUESTION 3
 
 ### Question 4:
+Analysing the negative sentiment data from the substance abuse communities, we decided to focus on what contributed to a 
+```{r}
+use_senti2019 <- lm(sent_neg ~ n_words +
+                      liwc_anger +
+                      liwc_negative_emotion +
+                      liwc_positive_emotion +  
+                      liwc_sadness, data = post_data2019)
 
-```r{}
+glance(use_senti2019)
+use_senti2019
 
+
+use_senti2020 <- lm(sent_neg ~ n_words +
+                      liwc_anger +
+                      liwc_negative_emotion +
+                      liwc_positive_emotion +  
+                      liwc_sadness, data = post_data2020)
+
+glance(use_senti2020)
+use_senti2020
 ```
-
--ANSWER QUESTION 4
-
+Accounting for the two separate years, a similar model used between the two time periods explain significantly different amounts of variation. The posts from the 2019 time period were much more correlated with the other data. The Pandemic likely served as a significant confound. 
 ## Modeling
 
 -ADD MODELS HERE
