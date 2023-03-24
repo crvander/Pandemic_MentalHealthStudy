@@ -14,12 +14,12 @@ link-citations: true
 
 Mental health represents a critical aspect of an individual's overall well being as well as am important branch of Cognitive Science. Understanding not only a single individual's mental health, but also community's discussions and perceptions of mental health are essential to providing people with the help and support that they need. One online platform where community members come together to discuss mental and addiction topics is the online forum Reddit. Beginning in late 2018, data was collected from the platforms largest mental health centered communities for nearly two years. Our exploration of mental health discussion will leverage the rich data set provided by the platform in order to explore changes in mental health and addiction discussions in the period leading up to, as well as the beginning of the 2019-2020 pandemic. 
 
-Link to the original study [@Low2020-iu]: <br />
+Link to the original study (@Low2020-iu):  
 Low , D., Rumker, L., Talkar, T., Torous, J., Cecchi, G., &amp; Ghosh, S. (2020, October 12). Natural language processing reveals vulnerable mental health support groups and heightened health anxiety on reddit during COVID-19: Observational study. Journal of medical Internet research. Retrieved from https://pubmed.ncbi.nlm.nih.gov/32936777/ 
 
-This Dataset was created in conjunction with the National Institutes of Health in order to in to gather a more solid understanding of how online mental health support groups were utilized as a coping mechanism during the beginning of the 2019-2020 Pandemic. According to observational analysis conducted by the World Health Organization, the beginning lockdown period of the COVID-19 Pandemic saw an explosion of Anxiety, Depression, and related disorders [@whoCOVID19Pandemic, 1]. The negative effects of this rapidly growing mental crisis were only compounded by what the World Health Organization describes as a "Gap in Care". As a result of spiking costs in healthcare, impacted medical facilities due to COVID-19 infection, and isolation as a result of lockdowns drove many people to seek help and community online as a proxy for face-to-face treatment [@whoCOVID19Pandemic]. This trend is especially pronounced in younger populations who have less access to traditional health care. <br />
+This Dataset was created in conjunction with the National Institutes of Health in order to in to gather a more solid understanding of how online mental health support groups were utilized as a coping mechanism during the beginning of the 2019-2020 Pandemic. According to observational analysis conducted by the World Health Organization, the beginning lockdown period of the COVID-19 Pandemic saw an explosion of Anxiety, Depression, and related disorders (@whoCOVID19Pandemic, 1). The negative effects of this rapidly growing mental crisis were only compounded by what the World Health Organization describes as a "Gap in Care". As a result of spiking costs in healthcare, impacted medical facilities due to COVID-19 infection, and isolation as a result of lockdowns drove many people to seek help and community online as a proxy for face-to-face treatment (@whoCOVID19Pandemic). This trend is especially pronounced in younger populations who have less access to traditional health care.  
 
-In addition to rising rates of mental health disorders, the American Psychological Association noted that substance use disorders grew significantly during the early stages of the Pandemic [@Abramson2021]. The CDC estimates that usage rates for non-prescribed drugs increased 13% in time period of June 2019 to June 2020 [@Abramson2021]. This added additional stress to an already fragile healthcare system, and resulted in a spike in overdose related deaths across America in particular, but similar trends were visible world wide. <br />      
+In addition to rising rates of mental health disorders, the American Psychological Association noted that substance use disorders grew significantly during the early stages of the Pandemic (@Abramson2021). The CDC estimates that usage rates for non-prescribed drugs increased 13% in time period of June 2019 to June 2020 [@Abramson2021]. This added additional stress to an already fragile healthcare system, and resulted in a spike in overdose related deaths across America in particular, but similar trends were visible world wide.      
 
 Given the wealth of data from the Reddit Mental Health data set Team Tiny Models hopes to analyse the use of the Reddit Platform as tool for connecting those with both mental health disorders and substance use disorders over the years leading up to and immediately proceeding the early 2020 lock downs. As a group, we hope to explore the following questions: 
 
@@ -29,9 +29,11 @@ Given the wealth of data from the Reddit Mental Health data set Team Tiny Models
 
 * 2. How did economic stress change over the Pandemic, and did is it related to changes within emotion (i.e. Anger, Anxiety, General Negative Emotion).
 
-* 3. Do changes within substance use disorder communities mirror trends within mental health communities?
+* 3. Do different mental health emotional states affect the number of words you write in a post?
 
-* 4. Do different mental health/emotional states affect the number of words you write in a post?
+* 4. Do changes within substance use disorder communities mirror trends within mental health communities?
+
+
 
 ## Data
 
@@ -55,14 +57,41 @@ Each group has four datasets. For example the adhd group has the following datas
 
 Unique users across all time windows (pre and 2019 overlap): 826,961.
 
+**Variables description:**
+* subreddit: grupos on Reddit about a topic
+* author: unique in the same group
+* year
+* month
+* day
+* post
+* n_words: number of words in each post
+* Sent_neg: the probability of the post being negative (calculate by an algorithm)
+* Sent_neu: the probability of the post being neutral (calculate by an algorithm)
+* Sent_pos: the probability of the post being positive (calculate by an algorithm)
+
+**Variables that represent mental health issues:**
+All variables below represent the number or words detected by the **liwc**[^2] scale that represent that specific sentiment. It is a measured through people's text.
+
+* Isolation_total 
+* Domestic_stress_total
+* Economic_stress_total
+* liwc_anger
+* liwc_anxiety
+* liwc_negative_emotion
+* liwc_positive_emotion
+* liwc_sadness	
+
+Stress scale: Individual scores on the Perceived Stress Scale 14 (PSS) can range from 0 to 56, with higher scores indicating higher perceived stress.
+
 **License**
 This dataset is made available under the Public Domain Dedication and License v1.0 whose full text can be found at [http://www.opendatacommons.org/licenses/pddl/1.0/](http://www.opendatacommons.org/licenses/pddl/1.0/)
 
 [^1]: [Open Science Framework](https://osf.io/7peyq/l)
+[^2]: [LWIC - How it works](https://www.liwc.app/help/howitworks)
 
 ### Load packages
 
-```{r load-packages, message=FALSE}
+```{r load-packages, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(tidymodels)
 library(forcats)
@@ -70,7 +99,7 @@ library(olsrr)
 library(skimr)
 library(viridis)
 library(srvyr)
-library(scale)
+library(scales)
 library(osfr) #from osf website
 library(zoo)
 ```
@@ -99,7 +128,7 @@ Steps taken to reshape the data that would be useful for our analysis:
 
 **Get related mental datasets:** select only datasets related to mental health groups mentioned previously. The code below will check if data already exists, if so, it will skip this step.
 
-```{r data-wrangling, message=FALSE}
+```{r data-wrangling-step-1, message=FALSE}
 
 if(!file.exists("data/mental_health.rda")) {
   
@@ -119,7 +148,7 @@ if(!file.exists("data/mental_health.rda")) {
 
 **Combine datasets:** after dataset selection, we combine them all, since they have the same structure.
 
-```{r}
+```{r data-wrangling-step-2}
 
 if(!file.exists("data/mental_health.rda")) {
   
@@ -134,7 +163,7 @@ if(!file.exists("data/mental_health.rda")) {
 
 **Select important features:** select only the most useful features among 350 originally.
 
-```{r}
+```{r data-wrangling-step-3}
 
 if(!file.exists("data/mental_health.rda")) {
   
@@ -150,18 +179,20 @@ features <- c("subreddit", "author",	"date", "post", "n_words", "sent_neg", "sen
 
 **drop duplication:**  Because two datasets overlap, **pre**: Dec 2018 to Dec 2019, and **2019**: Jan 1 to April 20, 2019, we will drop duplicate data.
 
-```{r}
+```{r data-wrangling-step-4}
 
+if(!file.exists("data/mental_health.rda")) {
+  
   # DROP DUPLICATE USER
   red_mh <- unique(red_mh)
-
+}
 ```
 
 #### Step 5
 
-Split date in year, month, and day: create three new variables for date: year, month, and day, and drop date.
+**Split date:** create three new variables for date: year, month, and day, and drop date.
 
-```{r}
+```{r data-wrangling-step-5}
 
 # IF DATA EXISTS IT WILL SKIP THIS STEP
 if(!file.exists("data/mental_health.rda")) {
@@ -175,9 +206,9 @@ if(!file.exists("data/mental_health.rda")) {
 
 #### Step 6
 
-Save dataset and delete raw data: save the non-wrangled and wrangled datasets into the data folder, and delete 51 unnecessary and unused datasets from 107 total, releasing about 2.5GB on disk.
+**Save dataset and delete raw data:** save the non-wrangled and wrangled datasets into the data folder, and delete 51 unnecessary and unused datasets from 107 total, releasing about 2.5GB on disk.
 
-```{r}
+```{r data-wrangling-step-6}
 
 # IF DATA EXISTS IT WILL SKIP THIS STEP
 if(!file.exists("data/mental_health.rda")) {
@@ -192,7 +223,7 @@ if(!file.exists("data/mental_health.rda")) {
 
 #### Load the data
 
-```{r}
+```{r load-data}
 
 # LOAD THE DATASET
 load("data/mental_health.rda")
@@ -203,15 +234,19 @@ load("data/mental_health.rda")
 ### Exploratory Data Analysis
 
 **Summary of the data:**
-Our data has 390119 rows, and 18 columns, with 6 columns as character, and 12 as numeric. Any missing value detected across variables. The summary of some variables doesn't see right at first glance; for instance, the subreddit variable has **min 3** and **max 13**, but because they are character, so the summary shows the length of each category under that variable. We have an average 184 words per post, which will help answer one of our questions. Also we see 
+Our data has 390119 rows, and 18 columns, with 6 columns as character, and 12 as numeric. Any missing value detected across variables. The summary of some variables doesn't see right at first glance; for instance, the subreddit variable has **min 3** and **max 13**, but because they are character, so the summary shows the length of each category under that variable. The mean of the variables thatrepresent mental health issues are significant and we will explore them through the analysis.
 
-```{r}
+```{r eda}
 skim(red_mh)
 ```
+#### Subreddit groups:
+
+Number os subreddit groups during Dec 2018 to Apr 2020. Here we can see that some groups have a great amount of poster, such as adhd, anxiety, bpd, depression, lonely, socialanxiety, and suicidewatch.
 
 ```{r}
 table(red_mh$subreddit)
 ```
+
 
 ```{r}
 red_mh |>
@@ -266,11 +301,195 @@ red_mh |>
 ```
 -ANSWER QUESTION 3
 
-### Question 4:
+### Question 4
 
-```r{}
+In order to explore the relationship between substance abuse community data and the WHO's inference that these communities be driven online. If this inference were to be true, we should see that regardless of sentiment, there should in theory be more and longer posts to the substance abuse communities. This would represent an increases in community engagement. Because there are gaps in the data, we will be limiting the exploration the time period of January to April for both 2019 and 2020. This represents the very beginnings of the Pandemic Lockdowns where we would expect to see changes.
+
+In order to look into the activity on addiction related subreddits, it makes sense to analyse the frequency and length of new posts to the individual subreddits. As there is a time gap within the data we have selected to analyse the January to June period of both 2019 and 2020 and compare the two. I decided to smoothe the graphic to a 7 day rolling average in order to reduce some noise.
+
+```{r question-4, warning=FALSE}
+#Unify the date object to make analysis easier.
+red_mh$Date <- as.Date(with(red_mh, paste(year, month, day,sep="-")), "%Y-%m-%d")
+
+#Filter the data for the addiction related subreddits
+post_data <- red_mh[red_mh$subreddit %in% c('addiction','alcoholism'),] |>
+  drop_na(Date)
+
+#Identify the time window
+post_data2020 <- post_data[(post_data$Date >= as.Date("2020-01-01")) & (post_data$Date <= as.Date("2020-04-01")),]
+post_data2019 <- post_data[(post_data$Date >= as.Date("2019-01-01")) & (post_data$Date <= as.Date("2019-04-01")),]
+
+#Generate a chart of the Date and subreddit data charting the amount of posts per dat
+post_data2020 |>
+  group_by(Date, subreddit) %>%
+  summarise(total_count=n(),.groups = 'drop') |>
+  ggplot(aes(x=Date, y=total_count, group=subreddit, color=subreddit)) +
+  geom_line(aes(y=rollmean(total_count, 7, na.pad=TRUE))) +
+  geom_line(aes(y = mean(total_count)), color="darkred") +
+  #geom_hline(yintercept = mean(total_count), color="blue") +
+  xlab("Date") +
+  ylab("Posts per Day (Count)") +
+  labs(title = "Posts per Day on Addiction Related Subreddits Jan-Apr 2020")
+
+post_data2019 |>
+  group_by(Date, subreddit) %>%
+  summarise(total_count=n(),.groups = 'drop') |>
+  ggplot(aes(x=Date, y=total_count, group=subreddit, color=subreddit)) +
+  geom_line(aes(y=rollmean(total_count, 7, na.pad=TRUE))) +
+  geom_line(aes(y = mean(total_count)), color="darkred") +
+  #geom_hline(yintercept = mean(total_count), color="red") +
+  xlab("Date") +
+  ylab("Posts per Day (Count)") +
+  labs(title = "Posts per Day on Addiction Related Subreddits Jan-Apr 2019")
 
 ```
+
+Given the charts above, we see that there was increased usage of the addiction and alcoholism communities. We saw on average ~1 post more than in the same period than the year before. In order to gauge engagement we should next check to see if the post length changed. Shorter but more frequent posts may indicate that post-frequency may indicate spam or or other artificial growth of the data.
+Plotting the data
+
+```{r}
+
+post_data2020 |>
+  group_by(Date) |>
+  summarise(mean_count = mean(n_words)) |>
+  ggplot(aes(x = Date, y = mean_count)) +
+  geom_col(position = 'dodge') +
+  geom_line(aes(y = mean(mean_count)), color="darkred") +
+
+  #Fix up the format so that it is legible
+  xlab("Date") +
+  ylab("Length of Post (words)") +
+  labs(title = "The Length of Addiction Related Posts over Time Jan-Apr 2020")
+
+post_data2019 |>
+  group_by(Date) |>
+  summarise(mean_count = mean(n_words)) |>
+  ggplot(aes(x = Date, y = mean_count)) +
+  geom_col(position = 'dodge') +
+  geom_line(aes(y = mean(mean_count)), color="darkred") +
+
+  #Fix up the format so that it is legible
+  xlab("Date") +
+  ylab("Mean Length of Posts (words)") +
+  labs(title = "The Length of Addiction Related Posts over Time Jan-Apr 2019")
+```
+
+Now that we can infer that posts within addiction related subreddits were both more frequent and were as long as posts from the same period the prior year. From this we can infer that during the early months of 2020 there was more global engagement than in the same period of 2019.
+
+```{r}
+post_data2020 |>
+  group_by(Date) %>%
+  summarise(mean_pos = mean(sent_pos),
+            mean_neu = mean(sent_neu),
+            mean_neg= mean(sent_neg),
+            .groups = 'drop') |>
+  ggplot(aes(x=Date)) +
+  geom_line(aes(y = mean_pos, color = "Positive Sentiment")) +
+  geom_line(aes(y = mean_neu, color = "Neutral Sentiment")) +
+  geom_line(aes(y = mean_neg, color = "Negative Sentiment")) +
+  scale_color_manual(name = "Y series", values = c("Positive Sentiment" = "darkred", "Neutral Sentiment" = "blue", "Negative Sentiment" = "green"))+
+  xlab("Date") +
+  ylab("Sentiment Proportion") +
+  labs(title = "Mean sentiment accross posts for JAN-APR 2019")
+
+post_data2019 |>
+  group_by(Date) %>%
+  summarise(mean_pos = mean(sent_pos),
+            mean_neu = mean(sent_neu),
+            mean_neg= mean(sent_neg),
+            .groups = 'drop') |>
+  ggplot(aes(x=Date)) +
+  geom_line(aes(y = mean_pos, color = "Positive Sentiment")) +
+  geom_line(aes(y = mean_neu, color = "Neutral Sentiment")) +
+  geom_line(aes(y = mean_neg, color = "Negative Sentiment")) +
+  scale_color_manual(name = "Y series", values = c("Positive Sentiment" = "darkred", "Neutral Sentiment" = "blue", "Negative Sentiment" = "green"))+
+  xlab("Date") +
+  ylab("Sentiment Proportion") +
+  labs(title = "Mean sentiment accross posts for JAN-APR 2020")
+
+```
+
+When looking at the average sentiment across posts for each day, there doesn't seem to be much of a change between the JAN-APR 2019 and JAN-APR of 2020 time periods.
+
+Analysing the negative sentiment data from the substance abuse communities, we decided to focus on what contributed to a
+
+```{r}
+use_senti2019 <- lm(sent_neg ~ n_words +
+                            sent_neu +
+                            sent_pos +
+                            liwc_anger +
+                            liwc_anxiety +
+                            liwc_negative_emotion +
+                            liwc_positive_emotion +
+                            liwc_sadness +
+                            economic_stress_total +
+                            isolation_total +
+                            domestic_stress_total, data = post_data2019)
+
+glance(use_senti2019)
+use_senti2019
+
+
+use_senti2020 <- lm(sent_neg ~ n_words +
+                            sent_neu +
+                            sent_pos +
+                            liwc_anger +
+                            liwc_anxiety +
+                            liwc_negative_emotion +
+                            liwc_positive_emotion +
+                            liwc_sadness +
+                            economic_stress_total +
+                            isolation_total +
+                            domestic_stress_total, data = post_data2020)
+
+glance(use_senti2020)
+use_senti2020
+```
+
+Accounting for the two separate years, a similar model used between the two time periods explain significantly different amounts of variation. The posts from the 2019 time period were much more correlated with the other data. The Pandemic likely served as a significant confound.
+
+Another interesting idea of the substance abuse subreddits is the idea that negative or positive posts generally influencing the length of post.
+
+```{r}
+len_predict2019 <- lm(n_words ~ sent_neg +
+                            sent_neu +
+                            sent_pos +
+                            liwc_anger +
+                            liwc_anxiety +
+                            liwc_negative_emotion +
+                            liwc_positive_emotion +
+                            liwc_sadness +
+                            economic_stress_total +
+                            isolation_total +
+                            domestic_stress_total, data = post_data2020)
+
+ols_step_backward_p(len_predict2019)
+glance(len_predict2019)
+len_predict2019
+
+
+len_predict2020 <- lm(n_words ~ sent_neg +
+                            sent_neu +
+                            sent_pos +
+                            liwc_anger +
+                            liwc_anxiety +
+                            liwc_negative_emotion +
+                            liwc_positive_emotion +
+                            liwc_sadness +
+                            economic_stress_total +
+                            isolation_total +
+                            domestic_stress_total, data = post_data2020)
+
+ols_step_backward_p(len_predict2020)
+ols_step_backward_p(len_predict2020)
+
+glance(len_predict2020)
+len_predict2020
+```
+
+Interestingly the length of substance abuse related posting is strongly explained by the emotional content of the posting itself. Each model is sitting at ~82% of total variation explained. Posts that are sadder and angrier are shorter, while those that exhibit more general negative emotions or happiness tend to be longer in length. The ols step back methhod indicated thatt the sent_pos was cut, this makes sense as it should generally just be the inverse of the sent_neg and not providing eficacy to the model.
+
+All in all the Substance Abuse Data shows that communities centered around communal aide and coping with use disorders grew and were generally more active during the 2020 Pandemic than they were in the similar time window for 2019. That said, there were little sentiment changes between the two time windows, and what the make up of posts was relatively consistent.
 
 -ANSWER QUESTION 4
 
