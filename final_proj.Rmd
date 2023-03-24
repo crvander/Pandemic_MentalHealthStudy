@@ -70,7 +70,7 @@ library(olsrr)
 library(skimr)
 library(viridis)
 library(srvyr)
-library(scale)
+#library(scale)
 library(osfr) #from osf website
 library(zoo)
 ```
@@ -318,6 +318,7 @@ post_data2020 |>
   ggplot(aes(x = Date, y = mean_count)) +
   geom_col(position = 'dodge') +
   geom_line(aes(y = mean(mean_count)), color="darkred") +
+  geom_line(aes(y = median(mean_count)), color="green") +
 
   #Fix up the format so that it is legible
   xlab("Date") +
@@ -330,6 +331,7 @@ post_data2019 |>
   ggplot(aes(x = Date, y = mean_count)) +
   geom_col(position = 'dodge') +
   geom_line(aes(y = mean(mean_count)), color="darkred") +
+  geom_line(aes(y = median(mean_count)), color="green") +
 
   #Fix up the format so that it is legible
   xlab("Date") +
@@ -407,7 +409,7 @@ use_senti2020
 ```
 Accounting for the two separate years, a similar model used between the two time periods explain significantly different amounts of variation. The posts from the 2019 time period were much more correlated with the other data. The Pandemic likely served as a significant confound.
 
-Another interesting idea of the substance abuse subreddits is the idea that negative or positive posts generally influencing the length of post.
+Another interesting trend of the substance abuse subreddits is the idea that negative or positive posts generally influence the length of post. This mirror the similar findings presented earlier.
 ```{r}
 len_predict2019 <- lm(n_words ~ sent_neg +
                             sent_neu +
