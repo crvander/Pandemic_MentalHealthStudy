@@ -25,14 +25,11 @@ Given the wealth of data from the Reddit Mental Health data set Team Tiny Models
 
 ## Questions
 
-* 1. What is the mental health disorder issue was the most prominent on the Reddit platform during 2020 when compared with previous years?
+* 1. How did economic stress change over the Pandemic, and did is it related to changes within emotion (i.e. Anger, Anxiety, General Negative Emotion).
 
-* 2. How did economic stress change over the Pandemic, and did is it related to changes within emotion (i.e. Anger, Anxiety, General Negative Emotion).
+* 2. Do changes within substance use disorder communities mirror trends within mental health communities?
 
-* 3. Do different mental health emotional states affect the number of words you write in a post?
-
-* 4. Do changes within substance use disorder communities mirror trends within mental health communities?
-
+* 3. Do different mental health/emotional states affect the number of words written in a post?
 
 
 ## Data
@@ -102,19 +99,21 @@ library(srvyr)
 library(scales)
 library(osfr) #from osf website
 library(zoo)
+library(DT)
+library(HH)
 ```
 
 ### Data Import
 
 ```{r data-import, warning=FALSE}
 
-# if(!file.exists("data/mental_health_.rda")) {
-#   cidr <- getwd()
-#   mkfldr <- "data/"
-#   dir.create(file.path(cidr, mkfldr), recursive = TRUE)
-#   osf_retrieve_file("https://osf.io/7peyq/data/input/5efd0743af1156008d3b5532") |>
-#     osf_download("data/")
-# }
+if(!file.exists("data/mental_health_.rda")) {
+  cidr <- getwd()
+  mkfldr <- "data/"
+  dir.create(file.path(cidr, mkfldr), recursive = TRUE)
+  osf_retrieve_file("https://osf.io/7peyq/data/input/5efd0743af1156008d3b5532") |>
+    osf_download("data/")
+}
 
 ```
 
@@ -134,7 +133,6 @@ if(!file.exists("data/mental_health.rda")) {
   
   # GET RELATED MENTAL FILES
   mental_files = "anxiety|autism|adhd|ptsd|lonely|depression|suicidewatch|bipolarreddit|bpd|addiction|alcoholism|schizophrenia"
-    # mental_files = "adhd|anxiety"
   
   data <- list.files(recursive = TRUE,
                      path = "data/reddit_mental_health_dataset",
@@ -247,61 +245,419 @@ Number os subreddit groups during Dec 2018 to Apr 2020. Here we can see that som
 table(red_mh$subreddit)
 ```
 
+#### Total number of emotional words:
+Below we summarized the total of all sentiment variables detected by LIWC by year, only for obersevation purpose.
 
 ```{r}
+
+datatable(red_mh |>
+  group_by(year) |>
+  summarise(
+    total_isolation = sum(isolation_total),
+    total_economic_stress = sum(economic_stress_total),
+    total_domestic_stress = sum(domestic_stress_total),
+    total_anger = sum(liwc_anger),
+    total_anxiety = sum(liwc_anxiety),
+    total_neg_emotion = sum(liwc_negative_emotion),
+    total_pos_emotion = sum(liwc_positive_emotion),
+    total_sad_emotion = sum(liwc_sadness)
+  ))
+```
+
+
+#### Sum of the number of posts' words across the data:
+
+The graph below show the total number of words in each post by year. It adds on with out table above. Although they might not be related.
+
+```{r eda-1}
+
+options(scipen = 999)
 red_mh |>
-  group_by(subreddit) |>
-  summarize(Negative = (mean(sent_neg) * 100),
-            Neutral = (mean(sent_neu) * 100),
-            Positive = (mean(sent_pos) * 100)) |>
-  pivot_longer(cols = -subreddit, 
-               names_to = "sentiment",
-               values_to = "Percentage of subredditors") |>            
-  ggplot(aes(x = subreddit, y= `Percentage of subredditors` , fill = reorder(sentiment, `Percentage of subredditors`))) +
+  group_by(year) |>
+  summarize(total_words = sum(n_words)) |>
+  ggplot(aes(y = total_words,
+             x = year, fill=year)) +
   geom_bar(stat = "identity",
-           position = "dodge",
-           color = "black") +
-  guides(fill = guide_legend("sentiment")) +
-  labs(title = "Sentiment of redditors",
-       subtitle = "neutral appear to be used the most frequently") + theme(text = element_text(size = 15))
+           # position = "dodge"
+           ) +
+  scale_fill_viridis(discrete = TRUE, option="cividis") + 
+  theme_minimal() +
+  guides(fill = guide_legend("Flavor")) +
+  labs(title = "Number of words present in all subreddit groups from Dec 2018 to Apr 2020",
+       subtitle = "Number in millions",
+       x = NULL,
+       y =NULL) + 
+  guides(fill = "none") +
+  theme(
+    plot.title.position = "plot",
+    axis.text.x=element_text(size=12),
+    axis.text.y=element_text(size=12),
+    panel.grid.major.x = element_blank()
+  ) +
+ scale_y_continuous(labels = scales::label_number_si())
 ```
 
-```{r}
+The graph below shows the total number of words only for 2019 and 2020 from Jan to Apr, since for 2018 we only have Dec with data. 2020 overpass 2019 slightly
+
+```{r eda-2}
+
+options(scipen = 999)
 red_mh |>
-  group_by(subreddit) |>
-  count(sent_neg) |>
-  ggplot(aes(x=subreddit, y=n)) +
-  geom_bar(stat="identity", position=position_dodge()) +
-  labs(x = "Year", y = "Count", title = "Sentiment of redditors") +
-  guides(fill=guide_legend(title="Sentiment of redditors")) + 
-  theme_minimal()
+  filter(
+    month == "01" | month == "02" | month == "03"  | month == "04",
+    year == "2019" | year == "2020"
+  ) |>
+  group_by(year) |>
+  summarize(total_words = sum(n_words)) |>
+  ggplot(aes(y = total_words,
+             x = year, fill = year)) +
+  geom_bar(stat = "identity",
+           # position = "dodge"
+  ) +
+  scale_fill_manual(values = c("2020" = "#ef8a62")) +
+  theme_minimal() +
+  guides(fill = guide_legend("Flavor")) +
+   labs(title = "Number of words present in all subreddit groups in 2019 and 2020 from Jan to Apr",
+       subtitle = "Number in millions",
+       x = NULL,
+       y =NULL) + 
+  guides(fill = "none") +
+  scale_y_continuous(labels = scales::label_number_si())
 ```
 
+#### carlos
+
+The graph below show the total of emotional words by emotion detected by LIWC by year.
+
+```{r eda-2}
+
+options(scipen = 999)
+red_mh |>
+  group_by(year) |>
+  summarize(
+    isolation_total = sum(isolation_total),
+    economic_stress_total = sum(economic_stress_total),
+    domestic_stress_total = sum(domestic_stress_total),
+    liwc_anger = sum(liwc_anger),
+    liwc_anxiety = sum(liwc_anxiety),
+    liwc_negative_emotion = sum(liwc_negative_emotion),
+    liwc_positive_emotion = sum(liwc_positive_emotion),
+    liwc_sadness = sum(liwc_sadness),
+            ) |>
+  pivot_longer(isolation_total:liwc_sadness,
+               names_to = "emotion",
+               values_to = "tot_emot_words") |>
+  mutate(emotion =fct_reorder(emotion,tot_emot_words)) |>
+  ggplot(aes(y=emotion,
+             x = tot_emot_words,
+             fill=emotion)) +
+  geom_bar(stat = "identity",position = "dodge") +
+  scale_fill_viridis(discrete = TRUE, option="cividis") +
+  facet_wrap(~year, nrow = 1) +
+  guides(fill = "none") +
+  labs(title="Total of emotional words detected by LIWC from Dec 2018 to Apr 2020",
+       # subtitle="subtitle",
+       x=NULL,
+       y=NULL
+  ) +
+  theme(
+    plot.title.position = "plot",
+    axis.text.x=element_text(size=8),
+    axis.text.y=element_text(size=8)
+  ) +   scale_x_continuous(labels = scales::label_number_si())
+```
+
+#### carlos
+
+The graph below shows the same information of the graph above, but only for 2019 and 2020.
+
+```{r eda-3}
+
+# total of emotional words by emotions detected by liwc jan-apr 2019-2020 (TABLE AND plot)
+
+red_mh |>
+  filter(
+    month == "01" | month == "02" | month == "03"  | month == "04",
+    year == "2019" | year == "2020"
+  ) |>
+  group_by(year) |>
+  summarize(
+    isolation_total = sum(isolation_total),
+    economic_stress_total = sum(economic_stress_total),
+    domestic_stress_total = sum(domestic_stress_total),
+    liwc_anger = sum(liwc_anger),
+    liwc_anxiety = sum(liwc_anxiety),
+    liwc_negative_emotion = sum(liwc_negative_emotion),
+    liwc_positive_emotion = sum(liwc_positive_emotion),
+    liwc_sadness = sum(liwc_sadness)
+    ) |>
+    pivot_longer(isolation_total:liwc_sadness,
+                 names_to = "emotion",
+                 values_to = "total_emot_words")
+
+options(scipen = 999)
+red_mh |>
+  filter(
+    month == "01" | month == "02" | month == "03"  | month == "04",
+    year == "2019" | year == "2020"
+  ) |>
+  group_by(year) |>
+  summarize(
+    isolation_total = sum(isolation_total),
+    economic_stress_total = sum(economic_stress_total),
+    domestic_stress_total = sum(domestic_stress_total),
+    liwc_anger = sum(liwc_anger),
+    liwc_anxiety = sum(liwc_anxiety),
+    liwc_negative_emotion = sum(liwc_negative_emotion),
+    liwc_positive_emotion = sum(liwc_positive_emotion),
+    liwc_sadness = sum(liwc_sadness)
+    ) |>
+    pivot_longer(isolation_total:liwc_sadness,
+                 names_to = "emotion",
+                 values_to = "total_emot_words") |>
+    mutate(emotion =fct_reorder(emotion,total_emot_words)) |>
+    ggplot(aes(y=emotion,
+               x = total_emot_words,
+               fill=emotion)) +
+    geom_bar(stat = "identity",position = "dodge") +
+    scale_fill_viridis(discrete = TRUE, option="cividis") +
+    facet_wrap(~year, nrow = 1) +
+    guides(fill = "none") +
+    labs(title="Total of emotional words detected by LIWC from Jan to Apr of 2019 and 2020",
+         # subtitle="subtitle",
+         x=NULL,
+         y=NULL
+    ) +
+    theme(
+      plot.title.position = "plot",
+      panel.spacing = unit(1, "cm"),
+      axis.text.x=element_text(size=5),
+      axis.text.y=element_text(size=7)
+    ) +   scale_x_continuous(expand = c(0, 0), limits = c(0,700000), n.breaks = 6,
+                             labels = scales::label_number_si())
+
+
+```
+
+#### carlos
+
+<!-- # percentage of liwc per subreddit per year -->
+The next graph shows the percentage of each sentiment per subreddit from Jan to Apr of 2019 and 2020. We see a few sentiments that had a significant increase, such as suicidewatch group.
+
+```{r eda-5, message=FALSE}
+
+# percentage of liwc per subreddit per year
+options(scipen = 999)
+red_mh |>
+  filter(
+    year!="2018", 
+    month=="01" | month=="02" | month=="03" | month=="04") |>
+  group_by(subreddit, year) |>
+  summarize(
+    n_words = (mean(n_words) * 100),
+    isolation_total = (mean(isolation_total) * 100),
+    economic_stress_total = (mean(economic_stress_total) * 100),
+    domestic_stress_total = (mean(domestic_stress_total) * 100),
+    liwc_anger = (mean(liwc_anger) * 100),
+    liwc_anxiety = (mean(liwc_anxiety) * 100),
+    liwc_negative_emotion = (mean(liwc_negative_emotion) * 100),
+    liwc_positive_emotion = (mean(liwc_positive_emotion) * 100),
+    liwc_sadness = (mean(liwc_sadness) * 100)
+  ) |>
+  pivot_longer(isolation_total:liwc_sadness,
+               names_to = "emotion",
+               values_to = "perc_emotion") |>
+  # summarise(a=n_words, b=)
+  mutate(emotion =fct_reorder(emotion,perc_emotion)) |>
+  ggplot(aes(y=emotion,
+             x = perc_emotion,
+             fill=year)) +
+  geom_bar(stat = "identity",position = "dodge") +
+  scale_x_continuous(labels = scales::percent_format(scale=.1)) +
+  # scale_fill_viridis(discrete = TRUE, option="cividis") +
+  facet_wrap(~subreddit, nrow = 3) +
+  guides(fill = "none") +
+  labs(title="Percentage of sentiment captured in each subreddit group",
+       subtitle="From Jan to Apr of 2019 and 2020.",
+       x=NULL,
+       y=NULL
+  ) +
+  theme(
+    plot.title.position = "plot",
+     # panel.spacing = unit(1, "cm"),
+    axis.text.x=element_text(size=6),
+    axis.text.y=element_text(size=6)
+  ) 
+
+```
+
+The table below informs us the average of number of words in each post, as well as the average of each sentiment in that post grouped by subreddit group and year.
+
+```{r eda-6, message=FALSE}
+
+datatable(red_mh |>
+  filter(year!="2018",
+         month=="01" | month=="02" | month=="03" | month=="04"
+  ) |>
+  rowwise() |>
+  mutate(total_w=sum(c(isolation_total, economic_stress_total, domestic_stress_total,liwc_anger,liwc_anxiety, liwc_negative_emotion, liwc_positive_emotion, liwc_sadness))) |>
+  ungroup() |>
+  group_by(subreddit, year) |>
+  summarize(
+    avg_num_words_post = (mean(n_words)),
+    avg_sent_words_post = (mean(total_w))
+  ))
+```
+
+Based on the two graphs below, we see that there is an relationship between the number of emotional words found in a post and the lengths of it.
+
+```{r eda-7, message=FALSE}
+
+df_2018<-red_mh |>
+  filter(year=="2018") |>
+  rowwise() |>
+  mutate(total_w=sum(c(isolation_total, economic_stress_total, domestic_stress_total,liwc_anger,liwc_anxiety, liwc_negative_emotion, liwc_positive_emotion, liwc_sadness))) |>
+  ungroup() |>
+  group_by(month) |>
+  summarize(
+    n_words = (mean(n_words)),
+    sent_w = (mean(total_w))
+  ) 
+
+df_2019<-red_mh |>
+  filter(year=="2019") |>
+  rowwise() |>
+  mutate(total_w=sum(c(isolation_total, economic_stress_total, domestic_stress_total,liwc_anger,liwc_anxiety, liwc_negative_emotion, liwc_positive_emotion, liwc_sadness))) |>
+  ungroup() |>
+  group_by(month) |>
+  summarize(
+    n_words = (mean(n_words)),
+    sent_w = (mean(total_w))
+  ) 
+
+df_2020<-red_mh |>
+  filter(year=="2020") |>
+  rowwise() |>
+  mutate(total_w=sum(c(isolation_total, economic_stress_total, domestic_stress_total,liwc_anger,liwc_anxiety, liwc_negative_emotion, liwc_positive_emotion, liwc_sadness))) |>
+  ungroup() |>
+  group_by(month) |>
+  summarize(
+    n_words = (mean(n_words)),
+    sent_w = (mean(total_w))
+  ) 
+
+data <- rbind(df_2018, df_2019, df_2020)
+
+   ggplot(data, aes(x = sent_w,y=n_words)) +
+  geom_point() +
+     geom_smooth(method="lm") + 
+     labs(title="Relation of number of emotional words by LWIC and post's length",
+       subtitle="From 2018 to 2020",
+       x="Average of words in a post",
+       y="Average of emotional words"
+  ) +
+   scale_y_continuous(labels = scales::label_number_si())
+   
+  ggplot(data, aes(x = sent_w,y=n_words)) +
+    geom_line() +
+     labs(title="Relation of number of emotional words by LWIC and post's length",
+       subtitle="From 2018 to 2020",
+       x="Average of words in a post",
+       y="Average of emotional words"
+  ) +
+   scale_y_continuous(labels = scales::label_number_si())
+```
 
 ## Data Analysis
 
 ### Question 1:
 
-```r{}
+Given the LIWC data which contains scientific research to backup a language that someone uses can be used to identify their emotional, anxious, happy state, etc. (https://www.liwc.app/help/howitworks) Here the the economic stress is seen how it changes through 2018 to 2020. We can see it is the highest stressor and for the emotions associated with it we can see anxiety is the highest emotion related with economic stress. This is expected since the economy during COVID hit many countries around the world hard especially the supply chain and having a everlasting effect on the demand and financial sides (https://www.brookings.edu/research/ten-facts-about-covid-19-and-the-u-s-economy/).
 
+```{r message=FALSE}
+red_mh |>
+  group_by(subreddit, year) |>
+  summarize(Negative = (mean(sent_neg) * 100),
+            Neutral = (mean(sent_neu) * 100),
+            Positive = (mean(sent_pos) * 100)) |>
+  pivot_longer(cols = -subreddit & -year, 
+               names_to = "sentiment",
+               values_to = "Percentage of subredditors") |>            
+  ggplot(aes(x = year, y= `Percentage of subredditors` , fill = (sentiment))) +
+  geom_bar(stat = "identity",
+           position = "dodge",
+           color = "black") +
+  scale_y_continuous(expand = c(0, .3)) +
+  coord_flip() +
+  facet_wrap(~ subreddit, nrow=3) +
+  guides(fill = guide_legend("sentiment")) +
+  labs(title = "Sentiment of redditors by subreddit",
+       subtitle = "Neutral appear to be used the most frequently") + theme(text = element_text(size = 15)) + 
+  theme(
+    plot.title = element_text(size = 15, face = "bold"),
+    axis.title.x = element_blank(),
+
+    axis.text.x = element_blank(),
+    axis.ticks.x=element_blank(),
+    axis.title.y = element_blank()
+    )
 ```
--ANSWER QUESTION 1
 
-### Question 2:
+```{r}
+red_mh |>
+  group_by(year) |>
+  summarize(Negative = (mean(sent_neg) * 100),
+            Neutral = (mean(sent_neu) * 100),
+            Positive = (mean(sent_pos) * 100)) |>
+  pivot_longer(cols = -year, 
+               names_to = "sentiment",
+               values_to = "Percentage of subredditors") |>            
+  ggplot(aes(x = year, y= `Percentage of subredditors` , fill = sentiment)) +
+  geom_bar(stat = "identity",
+           position = "dodge",
+           color = "black") +
+  scale_y_continuous(expand = c(0, .3)) +
+  coord_flip() +
+  guides(fill = guide_legend("sentiment")) +
+  labs(title = "Sentiment of redditors by subreddit",
+       subtitle = "Neutral appear to be used the most frequently") + theme(text = element_text(size = 15)) + 
+  theme(
+    plot.title = element_text(size = 15, face = "bold"),
+    axis.title.x = element_blank(),
 
-```r{}
-
+    axis.text.x = element_blank(),
+    axis.ticks.x=element_blank(),
+    axis.title.y = element_blank()
+    )
 ```
--ANSWER QUESTION 2
 
-### Question 3:
+Seen how a 'negative' sentiment is common across the subreddits after neutral we want to see other variables and see if there are some patterns like more economic stress can be a factor of this. As seen from the bar plot the economic stress throughout the pandemic decreased slightly. In 2018 the economic stress is high as the average is > 80 % and in 2019 this drops to < 80 % and drops further in 2020. Nonetheless, this is still the highest compared to domestic and isolation.
 
-```r{}
-
+```{r}
+red_mh |>
+  group_by(year) |>
+  summarize(Isolation = mean(isolation_total),
+            Economic = mean(economic_stress_total),
+            Domestic = mean(domestic_stress_total)) |>
+  pivot_longer(cols = -year, 
+               names_to = "Type",
+               values_to = "Percentage") |>
+  rename(Year = year) |>
+  ggplot(aes(y = Percentage,
+             x = Year,
+             fill = reorder(Type, Percentage))) +
+  geom_bar(stat = "identity",
+           position = "dodge",
+           color = "black") +
+  theme_linedraw() +
+  guides(fill = guide_legend("Stressors")) +
+  labs(title = "Sentiment of redditors by year",
+       subtitle = "Economic appear to be the most frequently") + theme(text = element_text(size = 15)) + 
+  theme(
+    plot.title = element_text(size = 15, face = "bold"))
 ```
--ANSWER QUESTION 3
 
-### Question 4
+### Question 2
 
 In order to explore the relationship between substance abuse community data and the WHO's inference that these communities be driven online. If this inference were to be true, we should see that regardless of sentiment, there should in theory be more and longer posts to the substance abuse communities. This would represent an increases in community engagement. Because there are gaps in the data, we will be limiting the exploration the time period of January to April for both 2019 and 2020. This represents the very beginnings of the Pandemic Lockdowns where we would expect to see changes.
 
@@ -405,9 +761,122 @@ post_data2019 |>
   scale_color_manual(name = "Y series", values = c("Positive Sentiment" = "darkred", "Neutral Sentiment" = "blue", "Negative Sentiment" = "green"))+
   xlab("Date") +
   ylab("Sentiment Proportion") +
-  labs(title = "Mean sentiment accross posts for JAN-APR 2020")
+  labs(title = "Mean sentiment accross posts for JAN-APR 2020") +
+  theme(
+    plot.title.position = "plot"
+  ) 
 
 ```
+
+## Modeling
+
+#### Modeling Question 1
+
+Taking a look at multicolinearity a model is fit to see what changes like sentiment of negativity, positivity detected, etc. leads to multicolinearity. This model tells which variables to eliminate based on a high VIF which tells us variance of an estimated regression coefficient using colinearity. The point of this is to eliminate independent variables from affecting our linear regression. 
+
+```{r}
+lm<- linear_reg() |>
+  set_engine("lm") |>
+  fit(economic_stress_total ~ 
+        sent_neg +
+        sent_neu +
+        sent_pos +
+        liwc_anger +
+        liwc_anxiety +
+        liwc_negative_emotion +
+        liwc_positive_emotion +
+        liwc_sadness,
+      data = red_mh)
+tidy(lm)
+```
+```{r}
+lm2 <- lm(economic_stress_total ~ 
+        sent_neg +
+        sent_neu +
+        sent_pos +
+        liwc_anger +
+        liwc_anxiety +
+        liwc_negative_emotion +
+        liwc_positive_emotion +
+        liwc_sadness,
+      data = red_mh)
+summary(lm2)
+```
+
+```{r}
+vif_red <- vif(lm2)
+vif_red
+```
+
+On average we can see for an increase in anger detected the economic stress is increased by .11, an increased in anxiety is an increase of .02 in economic stress, an increase in positive emotio is an increase of .07 for economic stress and an increase in sadness is an increase of .09 for economic stress.
+
+```{r}
+lm3 <- lm(economic_stress_total ~ 
+        liwc_anger +
+        liwc_anxiety +
+        liwc_positive_emotion +
+        liwc_sadness,
+      data = red_mh)
+summary(lm3)
+vif_red2 <- vif(lm3)
+vif_red2
+```
+
+
+Using a backword apporach which is a different model  to see which variables doesn't add predictive power we can see Sent_neu doesn't add any predictive power since it has a high adjusted R-squared value. Still we'll eliminate the independent variables to get as much of a accurate linear model
+
+```{r}
+# fit the model (not using tidymodels)
+mod <- lm(economic_stress_total ~ sent_neg +
+        sent_neu +
+        sent_pos +
+        liwc_anger +
+        liwc_anxiety +
+        liwc_negative_emotion +
+        liwc_positive_emotion +
+        liwc_sadness,
+      data = red_mh)
+ols_step_backward_p(mod)
+```
+
+Using the interactive linear model we can see that anxiety is the greatest predictor for economic stress: economic stress = .06 * sadness + .07 * anxiety + .01 * sadness + .07 * positive emotion. In order to visualize this a linear plot is used to show how an increase in LIWC of either of the variables is associated to an increase in economic stress.
+
+```{r}
+lin_mod <- linear_reg() |>
+  set_engine("lm")
+
+pp_int_fit <- lin_mod |>
+  fit(economic_stress_total ~ liwc_sadness * liwc_anxiety * liwc_anger * liwc_positive_emotion, data = red_mh)
+tidy(pp_int_fit)
+
+red_mh |>
+  ggplot(aes(x = economic_stress_total, y = liwc_sadness)) +
+  geom_point()+
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "economic stress and liwc sadness",
+       subtitle = "Economic appear to be associated with detection of sadness", color = "landscape") 
+
+red_mh |>
+  ggplot(aes(x = economic_stress_total, y = liwc_anxiety)) +
+  geom_point()+
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "economic stress and liwc anxiety",
+       subtitle = "Economic appear to be associated with detection of anxiety", color = "landscape")
+red_mh |>
+  ggplot(aes(x = economic_stress_total, y = liwc_anger)) +
+  geom_point()+
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "economic stress and liwc anger",
+       subtitle = "Economic appear to be associated with detection of anger", color = "landscape")
+red_mh |>
+  ggplot(aes(x = economic_stress_total, y = liwc_positive_emotion)) +
+  geom_point()+
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "economic stress and liwc sadness",
+       subtitle = "Economic appear to be associated with detection of positive emotion", color = "landscape")
+```
+
+#### Modeling Question 2
 
 When looking at the average sentiment across posts for each day, there doesn't seem to be much of a change between the JAN-APR 2019 and JAN-APR of 2020 time periods.
 
@@ -491,16 +960,37 @@ Interestingly the length of substance abuse related posting is strongly explaine
 
 All in all the Substance Abuse Data shows that communities centered around communal aide and coping with use disorders grew and were generally more active during the 2020 Pandemic than they were in the similar time window for 2019. That said, there were little sentiment changes between the two time windows, and what the make up of posts was relatively consistent.
 
--ANSWER QUESTION 4
+#### Modeling Question 3
 
-## Modeling
+The model below is compatible with our findings before, about the relationship of number of emotional words found in each post and it lengths.
 
--ADD MODELS HERE
+```{r}
 
-### Results
+mod_all_sent_2020 <- lm(n_words ~
+                 isolation_total +
+                 economic_stress_total +
+                 domestic_stress_total +
+                 liwc_anger +
+                 liwc_anxiety +
+                 liwc_negative_emotion +
+                 liwc_positive_emotion +
+                 liwc_sadness,
+               data = red_mh)
 
--ADD RESULTS
+ols_step_backward_p(mod_all_sent_2020)
+
+glance(mod_all_sent_2020)
+
+tidy(mod_all_sent_2020)
+```
 
 ## Conclusion
 
--ADD CONCLUSION
+**How did economic stress change over the Pandemic, and did is it related to changes within emotion (i.e. Anger, Anxiety, General Negative Emotion).**
+We can see that economic stress is the highest contributor of stress in the posts and stayed relatively high as the years progressed. Through a multiple linear regression model we were able to see how detectors of sadness, anxiety, anger and positive emotion are able to predict a post involving economic stress.
+
+**Do changes within substance use disorder communities mirror trends within mental health communities?**
+All in all the Substance Abuse Data shows that communities centered around communal aide and coping with use disorders grew and were generally more active during the 2020 Pandemic than they were in the similar time window for 2019. That said, there were little sentiment changes between the two time windows, and what the make up of posts was relatively consistent.
+
+**Do different mental health/emotional states affect the number of words written in a post?**
+To find the relationship between word count and mental health/emotional states, we conducted a multiple linear regression. We found that predicted that neutral posts, economic stress, domestic stress, negative emotion, and positive emotion generally increase wordiness. Anger, anxiety, and sadness increase wordness.
