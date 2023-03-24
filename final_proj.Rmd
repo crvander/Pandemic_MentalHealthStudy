@@ -374,7 +374,7 @@ post_data2019 |>
 ```
 When looking at the average sentiment across posts for each day, there doesn't seem to be much of a change between the JAN-APR 2019 and JAN-APR of 2020 time periods.
 
-Analysing the negative sentiment data from the substance abuse communities, we decided to focus on what predictors resulted in a high negative sentiment post. 
+After analysing the negative sentiment data from the substance abuse communities, we decided to focus on what predictors resulted in a high negative sentiment post. 
 ```{r}
 use_senti2019 <- lm(sent_neg ~ n_words +
                             sent_neu +
