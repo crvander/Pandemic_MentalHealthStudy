@@ -107,13 +107,13 @@ library(HH)
 
 ```{r data-import, warning=FALSE}
 
-if(!file.exists("data/mental_health_.rda")) {
-  cidr <- getwd()
-  mkfldr <- "data/"
-  dir.create(file.path(cidr, mkfldr), recursive = TRUE)
-  osf_retrieve_file("https://osf.io/7peyq/data/input/5efd0743af1156008d3b5532") |>
-    osf_download("data/")
-}
+# if(!file.exists("data/mental_health_.rda")) {
+#   cidr <- getwd()
+#   mkfldr <- "data/"
+#   dir.create(file.path(cidr, mkfldr), recursive = TRUE)
+#   osf_retrieve_file("https://osf.io/7peyq/data/input/5efd0743af1156008d3b5532") |>
+#     osf_download("data/")
+# }
 
 ```
 
@@ -329,7 +329,7 @@ red_mh |>
 
 The graph below show the total of emotional words by emotion detected by LIWC by year.
 
-```{r eda-2}
+```{r eda-3}
 
 options(scipen = 999)
 red_mh |>
@@ -371,7 +371,7 @@ red_mh |>
 
 The graph below shows the same information of the graph above, but only for 2019 and 2020.
 
-```{r eda-3}
+```{r eda-4}
 
 # total of emotional words by emotions detected by liwc jan-apr 2019-2020 (TABLE AND plot)
 
@@ -439,9 +439,6 @@ red_mh |>
 
 ```
 
-#### carlos
-
-<!-- # percentage of liwc per subreddit per year -->
 The next graph shows the percentage of each sentiment per subreddit from Jan to Apr of 2019 and 2020. We see a few sentiments that had a significant increase, such as suicidewatch group.
 
 ```{r eda-5, message=FALSE}
