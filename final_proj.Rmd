@@ -32,8 +32,6 @@ Given the wealth of data from the Reddit Mental Health data set Team Tiny Models
 * 3. Do changes within substance use disorder communities mirror trends within mental health communities?
 
 * 4. Do different mental health/emotional states affect the number of words you write in a post?
-<!-- compare in each subreddit (plot face_wrap)  -->
-<!-- how commom is author in more than one subreddit? -->
 
 ## Data
 
@@ -74,6 +72,7 @@ library(viridis)
 library(srvyr)
 library(scale)
 library(osfr) #from osf website
+library(zoo)
 ```
 
 ### Data Import
@@ -174,27 +173,6 @@ if(!file.exists("data/mental_health.rda")) {
 }
 ```
 
-<!-- #### Step 5 -->
-
-<!-- Pivot sentence sentiment: group variables **sent_neg**, **sent_neu**, and **sent_pos**, that represent a sentiment of a post, into a new variable **post_sentiment**, and change the name of each category by dropping the preffix **sent_**. -->
-
-<!-- Pivot liwc variables: group variables **liwc_anger**, **liwc_anxiety**, **liwc_negative_emotion**, **liwc_positive_emotion**, and **liwc_sadness**, that measure people's sentiment through people's text, into a new variable **liwc**, and change the name of each category by dropping the preffix **liwc_**. -->
-
-<!-- ```{r} -->
-
-<!-- # IF DATA EXISTS IT WILL SKIP THIS STEP -->
-<!-- if(!file.exists("data/mental_health.rda")) { -->
-
-<!--   # PIVOT SENTENCE SENTIMENT -->
-<!--   red_mh_mod <- red_mh_mod |>  -->
-<!--     pivot_longer(sent_neg:sent_pos, names_to = "post_sent", values_to = "prob_sent", names_pattern = "sent_(.*)") -->
-
-<!--   # PIVOT LIWC -->
-<!--   # red_mh_mod <- red_mh_mod |> pivot_longer(liwc_anger:liwc_sadness, names_to = "people_sent", values_to = "people_sent_val", names_pattern = "liwc_(.*)") -->
-
-<!-- } -->
-<!-- ``` -->
-
 #### Step 6
 
 Save dataset and delete raw data: save the non-wrangled and wrangled datasets into the data folder, and delete 51 unnecessary and unused datasets from 107 total, releasing about 2.5GB on disk.
@@ -208,7 +186,7 @@ if(!file.exists("data/mental_health.rda")) {
   save(red_mh, file="data/mental_health.rda")
   
   # DELETE RAW DATA: 107 FILES, +/- 2.5GB
-  # unlink("data/reddit_mental_health_dataset", recursive = TRUE)
+  unlink("data/reddit_mental_health_dataset", recursive = TRUE)
 }
 ```
 
