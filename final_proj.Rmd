@@ -105,15 +105,15 @@ library(HH)
 
 ### Data Import
 
-```{r data-import, warning=FALSE}
+```{r data-import, warning=FALSE, eval=FALSE}
 
-# if(!file.exists("data/mental_health_.rda")) {
-#   cidr <- getwd()
-#   mkfldr <- "data/"
-#   dir.create(file.path(cidr, mkfldr), recursive = TRUE)
-#   osf_retrieve_file("https://osf.io/7peyq/data/input/5efd0743af1156008d3b5532") |>
-#     osf_download("data/")
-# }
+if(!file.exists("data/mental_health_.rda")) {
+  cidr <- getwd()
+  mkfldr <- "data/"
+  dir.create(file.path(cidr, mkfldr), recursive = TRUE)
+  osf_retrieve_file("https://osf.io/7peyq/data/input/5efd0743af1156008d3b5532") |>
+    osf_download("data/")
+}
 
 ```
 
@@ -246,8 +246,7 @@ table(red_mh$subreddit)
 ```
 
 #### Total number of emotional words:
-Below we summarized the total of all sentiment variables detected by LIWC by year, only for obersevation purpose.
-
+Below we summarized the total of all sentiment variables detected by LIWC by year, only for obersevation purpose. We can see that some variables had increase, if we compare only four months in 2020 wit hthe entire year of 2019.
 ```{r}
 
 datatable(red_mh |>
@@ -267,9 +266,9 @@ datatable(red_mh |>
 
 #### Sum of the number of posts' words across the data:
 
-The graph below show the total number of words in each post by year. It adds on with out table above. Although they might not be related.
+The graph below show the total number of words in each post by year. It matches with the table information from above. Although they might not be related. It seems that users have been writing more in 2020, proportionally.
 
-```{r eda-1}
+```{r eda-1, warning=FALSE}
 
 options(scipen = 999)
 red_mh |>
@@ -325,15 +324,11 @@ red_mh |>
   scale_y_continuous(labels = scales::label_number_si())
 ```
 
-#### carlos
-
 The graph below show the total of emotional words by emotion detected by LIWC by year.
 
 ```{r eda-3}
-
-options(scipen = 999)
 red_mh |>
-  group_by(year) |>
+   group_by(year) |>
   summarize(
     isolation_total = sum(isolation_total),
     economic_stress_total = sum(economic_stress_total),
@@ -342,20 +337,23 @@ red_mh |>
     liwc_anxiety = sum(liwc_anxiety),
     liwc_negative_emotion = sum(liwc_negative_emotion),
     liwc_positive_emotion = sum(liwc_positive_emotion),
-    liwc_sadness = sum(liwc_sadness),
-            ) |>
+    liwc_sadness = sum(liwc_sadness)
+  ) |>
+  rowwise() |>
+  mutate(total_liwd = sum(c(isolation_total, economic_stress_total, domestic_stress_total,liwc_anger,liwc_anxiety, liwc_negative_emotion, liwc_positive_emotion, liwc_sadness))) |>
   pivot_longer(isolation_total:liwc_sadness,
                names_to = "emotion",
                values_to = "tot_emot_words") |>
+  mutate(perc=(tot_emot_words/total_liwd)) |>
   mutate(emotion =fct_reorder(emotion,tot_emot_words)) |>
   ggplot(aes(y=emotion,
-             x = tot_emot_words,
+             x = perc,
              fill=emotion)) +
   geom_bar(stat = "identity",position = "dodge") +
   scale_fill_viridis(discrete = TRUE, option="cividis") +
   facet_wrap(~year, nrow = 1) +
   guides(fill = "none") +
-  labs(title="Total of emotional words detected by LIWC from Dec 2018 to Apr 2020",
+  labs(title="Percentage of emotional words detected by LIWC from Dec 2018 to Apr 2020",
        # subtitle="subtitle",
        x=NULL,
        y=NULL
@@ -364,12 +362,10 @@ red_mh |>
     plot.title.position = "plot",
     axis.text.x=element_text(size=8),
     axis.text.y=element_text(size=8)
-  ) +   scale_x_continuous(labels = scales::label_number_si())
+  )
 ```
 
-#### carlos
-
-The graph below shows the same information of the graph above, but only for 2019 and 2020.
+The graph below shows the percentage of same information of the graph above, but only for 2019 and 2020, from Jan. to Apr. of each year.
 
 ```{r eda-4}
 
@@ -401,7 +397,7 @@ red_mh |>
     month == "01" | month == "02" | month == "03"  | month == "04",
     year == "2019" | year == "2020"
   ) |>
-  group_by(year) |>
+   group_by(year) |>
   summarize(
     isolation_total = sum(isolation_total),
     economic_stress_total = sum(economic_stress_total),
@@ -411,30 +407,31 @@ red_mh |>
     liwc_negative_emotion = sum(liwc_negative_emotion),
     liwc_positive_emotion = sum(liwc_positive_emotion),
     liwc_sadness = sum(liwc_sadness)
-    ) |>
-    pivot_longer(isolation_total:liwc_sadness,
-                 names_to = "emotion",
-                 values_to = "total_emot_words") |>
-    mutate(emotion =fct_reorder(emotion,total_emot_words)) |>
-    ggplot(aes(y=emotion,
-               x = total_emot_words,
-               fill=emotion)) +
-    geom_bar(stat = "identity",position = "dodge") +
-    scale_fill_viridis(discrete = TRUE, option="cividis") +
-    facet_wrap(~year, nrow = 1) +
-    guides(fill = "none") +
-    labs(title="Total of emotional words detected by LIWC from Jan to Apr of 2019 and 2020",
-         # subtitle="subtitle",
-         x=NULL,
-         y=NULL
-    ) +
-    theme(
-      plot.title.position = "plot",
-      panel.spacing = unit(1, "cm"),
-      axis.text.x=element_text(size=5),
-      axis.text.y=element_text(size=7)
-    ) +   scale_x_continuous(expand = c(0, 0), limits = c(0,700000), n.breaks = 6,
-                             labels = scales::label_number_si())
+  ) |>
+  rowwise() |>
+  mutate(total_liwd = sum(c(isolation_total, economic_stress_total, domestic_stress_total,liwc_anger,liwc_anxiety, liwc_negative_emotion, liwc_positive_emotion, liwc_sadness))) |>
+  pivot_longer(isolation_total:liwc_sadness,
+               names_to = "emotion",
+               values_to = "tot_emot_words") |>
+  mutate(perc=(tot_emot_words/total_liwd)) |>
+  mutate(emotion =fct_reorder(emotion,tot_emot_words)) |>
+  ggplot(aes(y=emotion,
+             x = perc,
+             fill=emotion)) +
+  geom_bar(stat = "identity",position = "dodge") +
+  scale_fill_viridis(discrete = TRUE, option="cividis") +
+  facet_wrap(~year, nrow = 1) +
+  guides(fill = "none") +
+  labs(title="Percentage of emotional words detected by LIWC from Jan to Apr of 2019 and 2020",
+       # subtitle="subtitle",
+       x=NULL,
+       y=NULL
+  ) +
+  theme(
+    plot.title.position = "plot",
+    axis.text.x=element_text(size=8),
+    axis.text.y=element_text(size=8)
+  )
 
 
 ```
@@ -567,7 +564,7 @@ data <- rbind(df_2018, df_2019, df_2020)
 
 ## Data Analysis
 
-### Question 1:
+### Question 1
 
 Given the LIWC data which contains scientific research to backup a language that someone uses can be used to identify their emotional, anxious, happy state, etc. (https://www.liwc.app/help/howitworks) Here the the economic stress is seen how it changes through 2018 to 2020. We can see it is the highest stressor and for the emotions associated with it we can see anxiety is the highest emotion related with economic stress. This is expected since the economy during COVID hit many countries around the world hard especially the supply chain and having a everlasting effect on the demand and financial sides (https://www.brookings.edu/research/ten-facts-about-covid-19-and-the-u-s-economy/).
 
@@ -771,7 +768,7 @@ post_data2019 |>
 
 Taking a look at multicolinearity a model is fit to see what changes like sentiment of negativity, positivity detected, etc. leads to multicolinearity. This model tells which variables to eliminate based on a high VIF which tells us variance of an estimated regression coefficient using colinearity. The point of this is to eliminate independent variables from affecting our linear regression. 
 
-```{r}
+```{r warning=FALSE}
 lm<- linear_reg() |>
   set_engine("lm") |>
   fit(economic_stress_total ~ 
