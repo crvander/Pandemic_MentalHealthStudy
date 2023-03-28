@@ -11,7 +11,7 @@ Given the wealth of data from the Reddit Mental Health data set Team Tiny Models
 * 3. Do different mental health/emotional states affect the number of words written in a post?
 
 ## Data
-The original data in this analysis is from Reddit and comprises 107 different datasets, including posts from 15 mental health support groups across 28 subreddits from 2018 to 2020. It was originally used, from January to April 2020, to analyze how COVID-19 affected mental health support groups[^Low et al. 2020a]. The dataset was downloaded from Open Science Framework (OSF)1, a free and open-source project management tool for researchers.
+The original data in this analysis is from Reddit and comprises 107 different datasets, including posts from 15 mental health support groups across 28 subreddits from 2018 to 2020. It was originally used, from January to April 2020, to analyze how COVID-19 affected mental health support groups[^1]. The dataset was downloaded from Open Science Framework (OSF)[^2], a free and open-source project management tool for researchers.
 
-[^1]: [Open Science Framework](https://osf.io/7peyq/)
-[^Low et al. 2020a]: [](https://www.who.int/news/item/02-03-2022-covid-19-pandemic-triggers-25-increase-in-prevalence-of-anxiety-and-depression-worldwide)
+[^1]: [Low et al. 2020a](https://www.who.int/news/item/02-03-2022-covid-19-pandemic-triggers-25-increase-in-prevalence-of-anxiety-and-depression-worldwide)
+[^2]: [Open Science Framework](https://osf.io/7peyq/)
