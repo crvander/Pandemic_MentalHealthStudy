@@ -1,1 +1,3 @@
 # Unpacking the Invisible: Exploring the Mental Health Challenges of Living Through a Global Pandemic
+
+The article emphasizes the importance of mental health and how understanding the community's discussions and perceptions can help provide support to those in need. The data was collected for almost two years from the largest mental health-centered communities on Reddit, starting in late 2018. The article aims to explore the changes in mental health and addiction discussions on the platform between 2018 and 2020 using the collected data.
