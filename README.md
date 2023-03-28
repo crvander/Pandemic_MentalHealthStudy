@@ -6,9 +6,9 @@ The article discusses a dataset created with the National Institutes of Health t
 
 ## Questions
 Given the wealth of data from the Reddit Mental Health data set Team Tiny Models hopes to analyse the use of the Reddit Platform as tool for connecting those with both mental health disorders and substance use disorders over the years leading up to and immediately proceeding the early 2020 lock downs. We hope to explore the following questions:
-* 1. How did economic stress change over the Pandemic, and did is it related to changes within emotion (i.e. Anger, Anxiety, General Negative Emotion).
-* 2. Do changes within substance use disorder communities mirror trends within mental health communities?
-* 3. Do different mental health/emotional states affect the number of words written in a post?
+ 1. How did economic stress change over the Pandemic, and did is it related to changes within emotion (i.e. Anger, Anxiety, General Negative Emotion).
+ 2. Do changes within substance use disorder communities mirror trends within mental health communities?
+ 3. Do different mental health/emotional states affect the number of words written in a post?
 
 ## Data
 The original data in this analysis is from Reddit and comprises 107 different datasets, including posts from 15 mental health support groups across 28 subreddits from 2018 to 2020. It was originally used, from January to April 2020, to analyze how COVID-19 affected mental health support groups[^1]. The dataset was downloaded from Open Science Framework (OSF)[^2], a free and open-source project management tool for researchers.
