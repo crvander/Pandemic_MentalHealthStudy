@@ -1,5 +1,6 @@
 # Unpacking the Invisible: Exploring the Mental Health Challenges of Living Through a Global Pandemic
 
+## Introduction
 This project emphasizes the importance of mental health and how understanding the community's discussions and perceptions can help provide support to those in need. The data was collected for almost two years from the largest mental health-centered communities on Reddit, starting in late 2018. The article aims to explore the changes in mental health and addiction discussions on the platform between 2018 and 2020 using the collected data.
 
 The article discusses a dataset created with the National Institutes of Health to better understand how online mental health support groups were used during the beginning of the COVID-19 pandemic as a coping mechanism. According to the World Health Organization, there was an increase in anxiety, depression, and related disorders during the lockdown period of the pandemic. This mental health crisis was compounded by a "gap in care" due to spiking healthcare costs, impacted medical facilities, and isolation caused by lockdowns. Consequently, many people sought help and community online as a substitute for face-to-face treatment, particularly younger populations with less access to traditional healthcare.
